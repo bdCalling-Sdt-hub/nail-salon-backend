@@ -1,10 +1,11 @@
 const bcrypt = require("bcrypt");
 const emailWithNodemailer = require("../../config/email.config");
-const sendResponse = require("../../shared/sendResponse");
+const sendResponse = require("../../../shared/sendResponse");
 const httpStatus = require("http-status");
-const catchAsync = require("../../shared/catchAsync");
-const UserService = require("../user/user.server");
-const generateOTP = require("../../util/generateOTP");
+const catchAsync = require("../../../shared/catchAsync");
+// const UserService = require("../user/user.server");
+const AuthService = require("./auth.service");
+const generateOTP = require("../../../util/generateOTP");
 
 
 exports.register = catchAsync(async (req, res) => {
@@ -21,7 +22,7 @@ exports.register = catchAsync(async (req, res) => {
         password: hashPassword,
         oneTimeCode:newOtp
     }
-    await UserService.createUserToDB(data);
+    await AuthService.createUserToDB(data);
 
     emailWithNodemailer(emailData);
     return sendResponse(res, {
@@ -34,7 +35,7 @@ exports.register = catchAsync(async (req, res) => {
 
 exports.login = catchAsync(async (req, res) => {
     const payload = req.body;
-    const { token }= await UserService.login(payload);
+    const { token }= await AuthService.login(payload);
         return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -46,7 +47,7 @@ exports.login = catchAsync(async (req, res) => {
 
 
 exports.verifyEmail = catchAsync(async (req, res) => {
-    await UserService.verifyEmail(req.body)
+    await AuthService.verifyEmail(req.body)
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -55,7 +56,7 @@ exports.verifyEmail = catchAsync(async (req, res) => {
 });
 
 exports.forgotPassword = catchAsync(async (req, res) => {
-    await UserService.forgotPassword(req.body)
+    await AuthService.forgotPassword(req.body)
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -64,7 +65,7 @@ exports.forgotPassword = catchAsync(async (req, res) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res) => {
-    await UserService.resetPassword(req.body)
+    await AuthService.resetPassword(req.body)
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -73,7 +74,7 @@ exports.resetPassword = catchAsync(async (req, res) => {
 });
 
 exports.changePassword = catchAsync(async (req, res) => {
-    await UserService.resetPassword(req.body)
+    await AuthService.resetPassword(req.body)
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -101,7 +102,7 @@ exports.updateProfile = catchAsync(async (req, res) => {
         imageFileName,
     };
 
-    await UserService.updateProfile(user, data)
+    await AuthService.updateProfile(user, data)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -111,7 +112,19 @@ exports.updateProfile = catchAsync(async (req, res) => {
 });
 
 exports.getProfileFromDB = catchAsync(async (req, res) => {
-    const user = await UserService.getProfileFromDB(req.user)
+    const user = await AuthService.getProfileFromDB(req.user)
+
+    return sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Retrieve Data",
+        user: user
+    });
+});
+
+exports.deleteProfileFromDB = catchAsync(async (req, res) => {
+    const id = req.user._id;
+    const user = await AuthService.getProfileFromDB(id)
 
     return sendResponse(res, {
         statusCode: httpStatus.OK,

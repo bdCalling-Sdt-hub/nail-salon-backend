@@ -1,9 +1,9 @@
-const ApiError = require("../../errors/ApiError");
-const generateOTP = require("../../util/generateOTP");
-const emailWithNodemailer = require("../../config/email.config");
+const ApiError = require("../../../errors/ApiError");
+const generateOTP = require("../../../util/generateOTP");
+const emailWithNodemailer = require("../../../config/email.config");
 const User = require("../user/user.model");
 const { StatusCodes } = require("http-status-codes");
-const config = require("../../config");
+const config = require("../../../config");
 
 exports.createUserToDB = async(payload)=>{
 
@@ -219,4 +219,14 @@ exports.getProfileFromDB = async (user) => {
     }
 
     return isExistUser;
+};
+
+exports.deleteProfileFromDB = async (id) => {
+
+    const isExistUser = await User.findById(id);
+    if (!isExistUser) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exits");
+    }
+    await User.findByIdAndUpdate({_id: id}, {verified: false}, {new: true})
+    return;
 };

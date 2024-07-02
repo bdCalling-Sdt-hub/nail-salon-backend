@@ -1,6 +1,6 @@
 const {StatusCodes} = require("http-status-codes");
-const ApiError = require("../../../../errors/ApiError");
-const unlinkFile= require("../../../../util/unlinkFile");
+const ApiError = require("../../../errors/ApiError");
+const unlinkFile= require("../../../util/unlinkFile");
 const Banner = require("./banner.model");
 
 exports.createBannerToDB = async (payload) => {

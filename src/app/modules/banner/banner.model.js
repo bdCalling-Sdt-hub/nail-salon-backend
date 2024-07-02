@@ -10,7 +10,8 @@ const bannerSchema = new mongoose.Schema(
             type: String,
             require: true
         }
-    }
+    },
+    {timestamps: true}
 )
 
 const Banner = mongoose.model("Banner", bannerSchema);

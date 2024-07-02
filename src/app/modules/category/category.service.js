@@ -27,12 +27,14 @@ exports.getCategory= async(id)=>{
     return category;
 }
 
-exports.updateCategory= async(id)=>{
+exports.updateCategory= async(id, payload)=>{
+    
     //delete from folder
     const isCategoryExist = await Category.findById({_id: id});
-    unlinkFile(isCategoryExist?.image);
+    if(payload.image){
+        unlinkFile(isCategoryExist?.image);
+    }
 
-    //delete from database
-    await Category.findByIdAndDelete(id);
+    await Category.findByIdAndUpdate({_id: id}, payload, {new: true});
     return;
 }
