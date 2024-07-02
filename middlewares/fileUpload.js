@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 const configureFileUpload = () => {
-  const uploadDir = path.join(process.cwd(), "uploads", "media");
+  const uploadDir = path.join(process.cwd(), "uploads", "images");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
@@ -44,7 +44,7 @@ const configureFileUpload = () => {
     fileFilter: fileFilter,
   }).fields([
     { name: "image", maxCount: 1 },
-    { name: "slider", maxCount: 3 },
+    { name: "bannerImage", maxCount: 1 },
     { name: "media", maxCount: 1 },
     { name: "thumbnail", maxCount: 1 },
     { name: "KYC", maxCount: 2 },

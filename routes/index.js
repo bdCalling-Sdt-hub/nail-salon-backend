@@ -1,6 +1,7 @@
 const express = require("express");
 const UserRoutes =require("../src/user/user.routes");
 const AuthRoutes =require("../src/auth/auth.routes");
+const BannerRoutes =require("../src/app/modules/banner/banner.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -11,6 +12,10 @@ const appRouteList = [
     {
         path: "/auth",
         route: AuthRoutes
+    },
+    {
+        path: "/banner",
+        route: BannerRoutes
     }
 ]
 
