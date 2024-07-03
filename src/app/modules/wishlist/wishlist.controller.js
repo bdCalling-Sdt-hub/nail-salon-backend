@@ -4,11 +4,11 @@ const catchAsync =require("../../../shared/catchAsync");
 const sendResponse =require("../../../shared/sendResponse");
 const WishlistService =require("./wishlist.service");
 
-const addToWishlist = catchAsync(async (req, res) => {
+exports.addToWishlist = catchAsync(async (req, res) => {
     const user = req.user;
-    const productData = req.body;
+    const serviceData = req.body;
 
-    const result = await WishlistService.addToWishlistToDB(user, productData);
+    const result = await WishlistService.addToWishlistToDB(user, serviceData);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -17,10 +17,10 @@ const addToWishlist = catchAsync(async (req, res) => {
     });
 });
 
-const getProductsFromWishlist = catchAsync(async (req, res) => {
+exports.getServicesFromWishlist = catchAsync(async (req, res) => {
     const id = req.user._id;
     const category = req.query.category;
-    const result = await WishlistService.getProductsFromWishlistDB(id, category);
+    const result = await WishlistService.getServicesFromWishlistDB(id, category);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -29,5 +29,3 @@ const getProductsFromWishlist = catchAsync(async (req, res) => {
         data: result
     });
 });
-
-export const WishlistController = { addToWishlist, getProductsFromWishlist };

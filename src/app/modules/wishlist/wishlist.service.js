@@ -19,14 +19,14 @@ exports.addToWishlistToDB = async (user, payload) => {
     if (serviceId) {
         await Wishlist.findOneAndDelete({
             user: user._id,
-            product: payload.product,
+            service: payload.service,
         });
         message = "Remove from wishlist";
         isExistService.save();
     } else {
         const data = {
             user: user.id,
-            product: payload.product,
+            service: payload.service,
         };
         await Wishlist.create(data);
         message = "Add to wishlist";
@@ -35,7 +35,10 @@ exports.addToWishlistToDB = async (user, payload) => {
     return message;
 };
   
-exports.getProductsFromWishlistDB = async (user, category) => {
-    const result = await Wishlist.find({ user: user._id }, {category: category});
+exports.getServicesFromWishlistDB = async (user, category) => {
+    let query;
+    if(category) query={category: category};
+    
+    const result = await Wishlist.find({ user: user._id }, query);
     return result;
 };

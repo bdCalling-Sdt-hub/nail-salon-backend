@@ -5,6 +5,7 @@ const BannerRoutes =require("../app/modules/banner/banner.routes");
 const CategoryRoutes =require("../app/modules/category/category.routes");
 const RuleRoutes =require("../app/modules/rule/rule.routes");
 const BookingRoutes =require("../app/modules/booking/booking.routes");
+const WishlistRoutes =require("../app/modules/wishlist/wishlist.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -31,6 +32,10 @@ const appRouteList = [
     {
         path: "/booking",
         route: BookingRoutes
+    },
+    {
+        path: "/wishlist",
+        route: WishlistRoutes
     }
 ]
 
