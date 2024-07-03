@@ -8,11 +8,11 @@ exports.createBooking= catchAsync(async(req, res)=>{
     }
     const booking = await BookingService.createBooking(data);
     return booking;
-})
+});
 
-exports.myBooking= async(payload)=>{
+exports.myBooking= catchAsync(async()=>{
     const id=req.user._id;
-    const query=req.params.status
-    const booking = BookingService.myBooking(id, query);
+    const status =req.params.status
+    const booking = BookingService.myBooking(id, status);
     return booking;
-}
+});

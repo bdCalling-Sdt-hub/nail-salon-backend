@@ -7,7 +7,7 @@ exports.createBooking= async(payload)=>{
     return booking;
 }
 
-exports.myBooking= async(id, query)=>{
-    const booking = Booking.find({user: id}, {status: query});
+exports.myBooking= async(id, status)=>{
+    const booking = Booking.find({user: id}, {status: status});
     return booking;
 }
