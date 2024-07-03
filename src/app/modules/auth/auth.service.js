@@ -5,7 +5,9 @@ const sendMail = require("../../../helper/emailHelper");
 const User = require("../user/user.model");
 const { StatusCodes } = require("http-status-codes");
 const config = require("../../../config");
-const { emailVerification } = require("../../../shared/emailTemplate");
+const { emailVerification, forgetPassword } = require("../../../shared/emailTemplate");
+const { createToken } = require("../../../helper/jwtHelper");
+const unlinkFile= require("../../../util/unlinkFile");
 
 exports.createUserToDB = async(payload)=>{
 
@@ -39,23 +41,22 @@ exports.createUserToDB = async(payload)=>{
     }
 
     const emailData = emailVerification({email: email, otp: newOtp, name: name})
-    
     sendMail(emailData);
 
-    // Schedule the task to set oneTImeCode to null after 3 minutes;
-    setTimeout(async()=>{
+    // Schedule the task to set oneTimeCode to null after 3 minutes;
+    setTimeout(async () => {
         await User.updateOne(
-            {_id: createUser._id}, 
-            {$set: {oneTimeCode: null}}
+            { _id: createUser._id }, 
+            { $set: { oneTimeCode: null } }
         );
+    }, 3 * 60 * 1000); 
 
-    }, 3 * 60 * 1000)  // 3 minutes in milliseconds
-
+    // if the user if not verify account between 3 minutes then that temporary account delete after 5 minutes
     setTimeout(async()=>{
         if(!createUser.verified){
             await User.findByIdAndDelete(createUser._id)
         }
-    }, 10 *60 * 1000) // 10 minutes in milliseconds
+    }, 5 *60 * 1000) // 10 minutes in milliseconds
 }
 
 exports.login = async(payload)=>{
@@ -74,7 +75,7 @@ exports.login = async(payload)=>{
     if (!isMatch) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "Your credential doesn't match");
     }
-    const token = jwt.sign({ _id: user._id, role: user.role },config.jwt.secret,{expiresIn: config.jwt.expire_in});
+    const token = createToken( { _id: user._id, role: user.role }, config.jwt.secret, config.jwt.expire_in)
 
     return token;
 }
@@ -83,12 +84,12 @@ exports.login = async(payload)=>{
 exports.verifyEmail = async(payload)=>{
     const { email, oneTimeCode } = payload;
     
-    const user = await User.findOne({ email });
-    if (!user) {
+    const isUserExist = await User.findOne({ email: email });
+    if (!isUserExist) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User not Found");
     }
-
-    if (user.oneTimeCode !== oneTimeCode) {
+    console.log(oneTimeCode)
+    if (isUserExist.oneTimeCode !== oneTimeCode) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "OTP Don't matched");
     }
 
@@ -116,34 +117,10 @@ exports.forgotPassword = async (payload) => {
     user.verified = false;
     await user.save();
   
-    // Prepare email for password reset
-    const emailData = {
-      email,
-      subject: "Password Reset Email",
-      html: `
-          <h1>Hello, ${user.name}</h1>
-          <p>Your Email verified Code is <h3>${oneTimeCode}</h3> to reset your password</p>
-          <small>This Code is valid for 3 minutes</small>
-        `,
-    };
 
-    // Send email
-    try {
-      await emailWithNodemailer(emailData);
-    } catch (emailError) {
-      console.error("Failed to send verification email", emailError);
-    }
-  
-    // Set a timeout to update the oneTimeCode to null after 1 minute
-    setTimeout(async () => {
-      try {
-        user.emailVerifyCode = null;
-        await user.save();
-        console.log("emailVerifyCode reset to null after 3 minute");
-      } catch (error) {
-        console.error("Error updating EmailVerifyCode:", error);
-      }
-    }, 180000); // 3 minute in milliseconds
+    const emailData = forgetPassword({email: email, otp: newOtp, name: user?.name})
+    sendMail(emailData);
+    return;
 }
 
 exports.resetPassword = async (payload) => {
@@ -199,23 +176,32 @@ exports.changePassword = async (payload) => {
 
 exports.updateProfile = async (user, payload) => {
     const {email} = payload;
+    
+    const {profileImage, ...othersData} = payload;
+    
     const isExistUser = await User.findById(user._id);
     if (!isExistUser) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
 
+    if(profileImage !== ""){
+        unlinkFile(isExistUser.profileImage)
+        othersData.profileImage
+    }
+
     const isExistEmail = await User.findOne({email});
-    if (!isExistEmail) {
+    if (email && email === isExistEmail.email) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Email Already Taken");
-      }
+    }
 
     const result = await User.findByIdAndUpdate(
         { _id: user._id },
-        payload,
+        { $set: othersData },
         { new: true }
     )
     return result
 };
+
 
 exports.getProfileFromDB = async (user) => {
 

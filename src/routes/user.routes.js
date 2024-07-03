@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const configureFileUpload = require("../middlewares/fileUpload.js");
 const auth = require("../middlewares/auth.js");
-const { USER_ROLE } = require("../enums/user.js");
+const { USER_ROLE } = require("../enums/index.js");
 const {
   userRegister,
   verifyEmail,

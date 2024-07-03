@@ -1,5 +1,5 @@
 const httpStatus = require("http-status");
-const ApiError = require("../errors/ApiError");
+const ApiError = require("../../errors/ApiError");
 const jwt = require("jsonwebtoken");
 
 const auth =(...roles) =>async (req, res, next) => {
@@ -14,6 +14,7 @@ const auth =(...roles) =>async (req, res, next) => {
 
         //verify token
         const verifyUser = jwt.verify(token, process.env.JWT_SECRET);
+        
         //add user to headers
         req.user = verifyUser;
         const { role } = verifyUser;

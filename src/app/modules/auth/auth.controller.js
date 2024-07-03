@@ -19,13 +19,15 @@ exports.register = catchAsync(async (req, res) => {
 });
 
 exports.login = catchAsync(async (req, res) => {
-    const payload = req.body;
-    const { token }= await AuthService.login(payload);
+
+    const token= await AuthService.login(req.body);
         return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Login successfully!",
-        data: token
+        data: {
+            token
+        }
     });
   
 });
@@ -69,36 +71,30 @@ exports.changePassword = catchAsync(async (req, res) => {
 
 exports.updateProfile = catchAsync(async (req, res) => {
     const user = req.user;
-    const updateData = req.body;
 
-    let imageFileName;
-    if (req.files && req.files.image && req.files.image[0]) {
-        imageFileName = `/media/${req.files.image[0].filename}`;
-    }
-
-    const fileName = isExistUser?.image?.split("/").pop();
-    const filePath = path.join(__dirname, "..", "uploads", "media", fileName);
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-    }
+    let profileImage="";
+    if (req.files && "profileImage" in req.files && req.files.profileImage[0]) {
+        profileImage = `/images/${req.files.profileImage[0].filename}`;
+      }
 
     const data = {
-        ...updateData,
-        imageFileName,
+        ...req.body,
+        profileImage
     };
 
-    await AuthService.updateProfile(user, data)
+    const result = await AuthService.updateProfile(user, data)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Profile Updated Successfully",
+        data: result
     });
 });
 
 exports.getProfileFromDB = catchAsync(async (req, res) => {
-    const user = await AuthService.getProfileFromDB(req.user)
 
+    const user = await AuthService.getProfileFromDB(req.user)
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
