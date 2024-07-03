@@ -8,33 +8,36 @@ exports.createCategory= async(payload)=>{
     if(!category){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Field to create category");
     }
-    return;
+    return category;
 }
 
 exports.deleteCategory= async(id)=>{
     //delete from folder
     const isCategoryExist = await Category.findById({_id: id});
-    console.log("image", isCategoryExist?.image)
-    unlinkFile(isCategoryExist?.image);
+    if(isCategoryExist?.image){
+        unlinkFile(isCategoryExist?.image);
+    }
 
     //delete from database
     await Category.findByIdAndDelete(id);
     return;
 }
 
-exports.getCategory= async(id)=>{
+exports.getCategory= async()=>{
     const category = await Category.find({});
     return category;
 }
 
 exports.updateCategory= async(id, payload)=>{
     
+    const { image, ...othersPayload} = payload
     //delete from folder
-    const isCategoryExist = await Category.findById({_id: id});
-    if(payload.image){
+    const isCategoryExist = await Category.findById(id);
+    if(image){
         unlinkFile(isCategoryExist?.image);
+        othersPayload.image=image
     }
 
-    await Category.findByIdAndUpdate({_id: id}, payload, {new: true});
-    return;
+    const result = await Category.findByIdAndUpdate({_id: id}, payload, {new: true});
+    return result;
 }
