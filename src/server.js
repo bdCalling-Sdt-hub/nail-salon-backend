@@ -2,7 +2,6 @@ const color = require("colors");
 const app = require("./app");
 const { default: mongoose } = require("mongoose");
 const config = require("./config");
-require("dotenv").config();
 
 //db connect here
 async function main() {

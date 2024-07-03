@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-const emailWithNodemailer = require("../../config/email.config");
 const sendResponse = require("../../../shared/sendResponse");
 const httpStatus = require("http-status");
 const catchAsync = require("../../../shared/catchAsync");
@@ -23,8 +22,6 @@ exports.register = catchAsync(async (req, res) => {
         oneTimeCode:newOtp
     }
     await AuthService.createUserToDB(data);
-
-    emailWithNodemailer(emailData);
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

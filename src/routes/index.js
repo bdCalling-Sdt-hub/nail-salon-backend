@@ -1,8 +1,8 @@
 const express = require("express");
-const UserRoutes =require("../src/user/user.routes");
-const AuthRoutes =require("../src/auth/auth.routes");
+const UserRoutes =require("../app/modules/user/user.routes");
+const AuthRoutes =require("../app/modules/auth/auth.routes");
 const BannerRoutes =require("../app/modules/banner/banner.routes");
-const BannerRoutes =require("../app/modules/category/category.routes");
+const CategoryRoutes =require("../app/modules/category/category.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -20,7 +20,7 @@ const appRouteList = [
     },
     {
         path: "/category",
-        route: BannerRoutes
+        route: CategoryRoutes
     }
 ]
 

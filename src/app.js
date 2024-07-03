@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const globalErrorHandler = require("../middlewares/globalErrorHandler");
+const globalErrorHandler = require("./app/middlewares/globalErrorHandler");
 const routes = require("./routes");
 
 //parser

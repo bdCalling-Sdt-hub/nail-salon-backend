@@ -1,7 +1,7 @@
 exports.emailVerification = (values) => {
     const data = {
         to: values.email,
-        subject: 'Your account credential for login',
+        subject: 'Account Activation Email',
         html: `
             <h1>Hello, ${values?.name}</h1>
             <p>Your email verified code is <h3>${values?.otp}</h3> to verify your email</p>

@@ -1,6 +1,6 @@
 const  BannerService = require("./banner.server");
-const sendResponse = require("../../../../shared/sendResponse");
-const catchAsync = require("../../../../shared/catchAsync");
+const sendResponse = require("../../../shared/sendResponse");
+const catchAsync = require("../../../shared/catchAsync");
 const {StatusCodes} = require("http-status-codes");
 
 

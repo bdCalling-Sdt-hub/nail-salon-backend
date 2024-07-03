@@ -1,13 +1,14 @@
 const ApiError = require("../../../errors/ApiError");
 const generateOTP = require("../../../util/generateOTP");
-const emailWithNodemailer = require("../../../config/email.config");
+const sendMail = require("../../../helper/emailHelper");
 const User = require("../user/user.model");
 const { StatusCodes } = require("http-status-codes");
 const config = require("../../../config");
+const { emailVerification } = require("../../../shared/emailTemplate");
 
 exports.createUserToDB = async(payload)=>{
 
-    const {email, password, confirmPassword} = payload;
+    const {email, password, confirmPassword, name} = payload;
     
     const isExistUser = await User.findOne({email});
     if(isExistUser){
@@ -23,18 +24,9 @@ exports.createUserToDB = async(payload)=>{
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create User");
     }
 
-    // send mail
-    const emailData = {
-        email,
-        subject: "Account Activation Email",
-        html: `
-            <h1>Hello, ${payload?.name}</h1>
-            <p>Your email verified code is <h3>${otp}</h3> to verify your email</p>
-            <small>This Code is valid for 3 minutes</small>
-        `
-    };
+    const emailData = emailVerification({email: email, otp: oneTimeCode, name: name})
     
-    emailWithNodemailer(emailData);
+    sendMail(emailData);
 
     // Schedule the task to set oneTImeCode to null after 3 minutes;
     setTimeout(async()=>{
