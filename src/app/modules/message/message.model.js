@@ -11,15 +11,10 @@ const messageSchema= new Schema(
             required: true,
         },
         conversationId: {
-            type: String,
+            type: Schema.Types.ObjectId,
+            ref: "Conversation",
             required: true,
-          },
-        messageType: {
-            type: String,
-            enum: ["text", "image"],
-            default: "text"
-        },
-
+        }
     }
 )
 const Message = model('Message', messageSchema);

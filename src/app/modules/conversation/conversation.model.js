@@ -1,6 +1,6 @@
 const { model, Schema } = require("mongoose")
 
-const conversationSchema = new model(
+const conversationSchema = new Schema(
     {
         participants: [
             {

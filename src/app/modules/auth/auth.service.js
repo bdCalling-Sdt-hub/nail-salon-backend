@@ -1,4 +1,5 @@
 const ApiError = require("../../../errors/ApiError");
+const bcrypt = require("bcrypt");
 const generateOTP = require("../../../util/generateOTP");
 const sendMail = require("../../../helper/emailHelper");
 const User = require("../user/user.model");
@@ -12,19 +13,32 @@ exports.createUserToDB = async(payload)=>{
     
     const isExistUser = await User.findOne({email});
     if(isExistUser){
-        throw new ApiError(StatusCodes.BAD_REQUEST, "This This already Exits" )
+        throw new ApiError(StatusCodes.BAD_REQUEST, "This Email already Exits" )
     }
 
     if(password !== confirmPassword){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Password and Confirm Password doesn't matched")
     }
-    const createUser= await User.create(payload);
+
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    
+    const otp = generateOTP();
+    const newOtp = otp.toString();
+
+    const data = {
+        ...payload,
+        password: hashPassword,
+        oneTimeCode:newOtp
+    }
+
+    const createUser= await User.create(data);
 
     if(!createUser){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create User");
     }
 
-    const emailData = emailVerification({email: email, otp: oneTimeCode, name: name})
+    const emailData = emailVerification({email: email, otp: newOtp, name: name})
     
     sendMail(emailData);
 

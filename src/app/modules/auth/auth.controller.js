@@ -8,20 +8,8 @@ const generateOTP = require("../../../util/generateOTP");
 
 
 exports.register = catchAsync(async (req, res) => {
-    const {password, ...registerData} = req.body;
-
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
     
-    const otp = generateOTP();
-    const newOtp = otp.toString();
-
-    const data = {
-        ...registerData,
-        password: hashPassword,
-        oneTimeCode:newOtp
-    }
-    await AuthService.createUserToDB(data);
+    await AuthService.createUserToDB(req.body);
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
