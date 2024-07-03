@@ -8,6 +8,7 @@ const BookingRoutes =require("../app/modules/booking/booking.routes");
 const WishlistRoutes =require("../app/modules/wishlist/wishlist.routes");
 const ConversationRoutes =require("../app/modules/conversation/conversation.routes");
 const MessageRoutes =require("../app/modules/message/message.routes");
+const ServiceRoutes =require("../app/modules/Service/service.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -46,6 +47,10 @@ const appRouteList = [
     {
         path: "/message",
         route: MessageRoutes
+    },
+    {
+        path: "/service",
+        route: ServiceRoutes
     }
 ]
 
