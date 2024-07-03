@@ -1,15 +1,16 @@
+const { StatusCodes } = require('http-status-codes');
 const catchAsync = require('../../../shared/catchAsync');
 const sendResponse =require( '../../../shared/sendResponse')
 const RuleService = require('./rule.service')
 
 //privacy 
 exports.createPrivacyPolicy = catchAsync(async (req, res) => {
-    const { ...privacyData } = req.body
+    const { ...privacyData } = req.body;
     const result = await RuleService.createPrivacyPolicyToDB(privacyData)
 
     sendResponse(res, {
-        success: true,
         statusCode: StatusCodes.OK,
+        success: true,
         message: 'Privacy policy created successfully',
         data: result,
     })

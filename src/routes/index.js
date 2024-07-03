@@ -3,6 +3,7 @@ const UserRoutes =require("../app/modules/user/user.routes");
 const AuthRoutes =require("../app/modules/auth/auth.routes");
 const BannerRoutes =require("../app/modules/banner/banner.routes");
 const CategoryRoutes =require("../app/modules/category/category.routes");
+const RuleRoutes =require("../app/modules/rule/rule.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -21,6 +22,10 @@ const appRouteList = [
     {
         path: "/category",
         route: CategoryRoutes
+    },
+    {
+        path: "/rule",
+        route: RuleRoutes
     }
 ]
 

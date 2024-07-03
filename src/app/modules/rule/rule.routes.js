@@ -2,6 +2,7 @@ const express=require('express')
 // const { USER_TYPE } =require('../../../enums/user')
 // const auth =require('../../middlewares/auth')
 const RuleController  =require('./rule.controller');
+const configureFileUpload = require('../../middlewares/fileHandler');
 const router = express.Router()
 
 //privacy policy
