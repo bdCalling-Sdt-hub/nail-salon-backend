@@ -11,16 +11,21 @@ exports.createProduct=async(payload)=>{
     return result;
 };
 
-exports.getProductsFromDB=async(user, stock)=>{
+exports.getProductsFromDB=async(user, type)=>{
     const query = {
         salon: user?._id,
     };
 
     // Check if there is a query parameter for quantity
-    if(stock === "stockOut"){
+    if(type === "stockOut"){
         query.quantity = 0;
     }
 
+    // Check if there is a query parameter for expired date
+    if(type === "expired"){
+        const today = new Date().toISOString().split('T')[0];
+        query.expiredDate= { $gt: today };
+    }
     
     const result = await Product.find(query);
     return result;

@@ -28,8 +28,8 @@ exports.createProduct=catchAsync(async(req, res)=>{
 
 exports.getProductsFromDB=catchAsync(async(req, res)=>{
     const user=req.user;
-    const stock = req.query.type
-    const result = await ProductService.getProductsFromDB(user, stock);
+    const type = req.query.type
+    const result = await ProductService.getProductsFromDB(user, type);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
