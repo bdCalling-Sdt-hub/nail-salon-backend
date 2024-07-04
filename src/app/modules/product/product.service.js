@@ -11,8 +11,18 @@ exports.createProduct=async(payload)=>{
     return result;
 };
 
-exports.getProductsFromDB=async(user)=>{
-    const result = await Product.find({salon: user?._id});
+exports.getProductsFromDB=async(user, stock)=>{
+    const query = {
+        salon: user?._id,
+    };
+
+    // Check if there is a query parameter for quantity
+    if(stock === "stockOut"){
+        query.quantity = 0;
+    }
+
+    
+    const result = await Product.find(query);
     return result;
 };
 
