@@ -29,7 +29,7 @@ exports.updateServiceFromDB=async(id, user, payload)=>{
         throw new ApiError(StatusCodes.NOT_FOUND, "Your Are Not authorized to change this service")
     }
     const isExitsService = await Service.findById(id);
-    if(!isExitsService){
+    if(!isExitsService){    
         throw new ApiError(StatusCodes.NOT_FOUND, "No Service Found");
     }
 

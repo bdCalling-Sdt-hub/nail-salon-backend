@@ -43,9 +43,10 @@ exports.deleteServiceFromDB=catchAsync(async(req, res)=>{
 })
 
 exports.updateServiceFromDB=catchAsync(async(req, res)=>{
+    const user = req.user;
     const id = req.params.id;
     const payload = req.body;
-    const result = await ServicerService.updateServiceFromDB(id, payload);
+    const result = await ServicerService.updateServiceFromDB(id, user, payload);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,

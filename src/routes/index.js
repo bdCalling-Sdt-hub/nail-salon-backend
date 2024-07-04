@@ -9,6 +9,7 @@ const WishlistRoutes =require("../app/modules/wishlist/wishlist.routes");
 const ConversationRoutes =require("../app/modules/conversation/conversation.routes");
 const MessageRoutes =require("../app/modules/message/message.routes");
 const ServiceRoutes =require("../app/modules/Service/service.routes");
+const ProductRoutes =require("../app/modules/product/product.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -51,6 +52,10 @@ const appRouteList = [
     {
         path: "/service",
         route: ServiceRoutes
+    },
+    {
+        path: "/product",
+        route: ProductRoutes
     }
 ]
 
