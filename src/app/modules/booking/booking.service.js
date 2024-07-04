@@ -1,6 +1,7 @@
 const {StatusCodes} = require("http-status-codes");
 const ApiError = require("../../../errors/ApiError");
 const Booking = require("./booking.model");
+const { default: mongoose } = require("mongoose");
 
 exports.createBooking= async(payload)=>{
     const booking = await Booking.create(payload);
@@ -24,7 +25,7 @@ exports.myBooking= async(user, status)=>{
         query.status = "Complete"
     }
 
-    const booking = await Booking.find(query).populate(["user", "salon", "service"]);
+    const booking = await Booking.find(query).populate(["user", "salon"]);
 
     // Filter bookings for salon by booking_date greater than today
     const today = new Date().toISOString().split('T')[0];
@@ -40,6 +41,67 @@ exports.myBooking= async(user, status)=>{
 
 exports.bookingDetails= async(id)=>{
     
-    const booking = await Booking.findById(id).populate(["user", "salon", "service"]);
+    const booking = await Booking.findById(id).populate(["user", "salon"]);
     return booking;
+}
+
+exports.weeklyBooking= async(user)=>{
+    const today = new Date();
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay()).toISOString().split('T')[0]; // Start of current week (Sunday)
+    const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 7).toISOString().split('T')[0]; // End of current week (Saturday)
+
+    const weeklyBooking = await Booking.find({
+        salon: user?._id,
+        booking_date: { $gte: startOfWeek, $lt: endOfWeek } // Filter for booking dates within the current week
+    }).populate(["user", "salon"]);
+
+    // here define all days with 0 income 
+    const weeklyIncome = [
+        { name: "Sat", income: 0 },
+        { name: "Sun", income: 0 },
+        { name: "Mon", income: 0 },
+        { name: "Tue", income: 0 },
+        { name: "Wed", income: 0 },
+        { name: "Thu", income: 0 },
+        { name: "Fri", income: 0 },
+    ];
+
+    // here calculating per day income
+    weeklyBooking.forEach(booking => {
+        const bookingDate = new Date(booking.booking_date);
+        const bookingDay = bookingDate.getDay();
+        const incomeIndex = bookingDay === 0 ? 6 : bookingDay - 1;
+        weeklyIncome[incomeIndex].income += parseInt(booking?.price);
+    });
+
+
+
+    const weeklyTotalIncome2 = await Booking.aggregate([
+        { $match: { 
+                salon: new mongoose.Types.ObjectId(user._id),
+                createdAt: {
+                    $gte: new Date(startOfWeek),
+                    $lt: new Date(endOfWeek),
+                } 
+            }
+        },
+        { $group: { _id: null, totalIncomes: { $sum: "$price" } } },
+    ]);
+    
+
+    const totalIncome = await Booking.aggregate([
+        { $match: { salon: new mongoose.Types.ObjectId(user._id) } },
+        { $group: { _id: null, totalIncomes: { $sum: "$price" } } },
+    ]);
+
+    const totalClient = await Booking.countDocuments({salon: user?._id})
+
+
+    console.log("totalIncome", totalIncome[0].totalIncomes)
+    console.log("totalClient", totalClient)
+    console.log("weeklyTotalIncome", weeklyTotalIncome2)
+
+
+
+    return weeklyIncome;
 }

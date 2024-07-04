@@ -7,6 +7,7 @@ const { USER_ROLE } = require("../../../enums");
 
 router.post("/", auth(USER_ROLE.USER),  configureFileUpload(), BookingController.createBooking);
 router.get("/", auth(USER_ROLE.USER, USER_ROLE.SALON), BookingController.myBooking);
+router.get("/weekly-booking", auth(USER_ROLE.SALON), BookingController.weeklyBooking);
 router.get("/:id", auth(USER_ROLE.USER, USER_ROLE.SALON), BookingController.bookingDetails);
 
 

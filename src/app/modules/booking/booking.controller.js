@@ -47,3 +47,16 @@ exports.bookingDetails= catchAsync(async(req, res)=>{
         data: booking
     })
 });
+
+
+exports.weeklyBooking= catchAsync(async(req, res)=>{
+    const user = req.user;
+    const booking = await BookingService.weeklyBooking(user);
+
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Booking Retrieve Successfully",
+        data: booking
+    })
+});
