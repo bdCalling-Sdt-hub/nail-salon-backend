@@ -38,6 +38,19 @@ exports.getProductsFromDB=catchAsync(async(req, res)=>{
     })
 })
 
+exports.getProductDetailsFromDB=catchAsync(async(req, res)=>{
+    const user = req.user;
+    const id = req.params.id;
+
+    const result = await ProductService.getProductDetailsFromDB(id, user);
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Product Details Retrieve Successfully",
+        data: result
+    })
+});
+
 exports.deleteProductFromDB=catchAsync(async(req, res)=>{
     const id = req.params.id;
     const salon = req.user;

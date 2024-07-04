@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post("/", auth(USER_ROLE.SALON), configureFileUpload(), ProductController.createProduct);
 router.get("/", auth(USER_ROLE.SALON), ProductController.getProductsFromDB);
+router.get("/:id", auth(USER_ROLE.SALON), ProductController.getProductDetailsFromDB);
 router.delete("/:id", auth(USER_ROLE.SALON), ProductController.deleteProductFromDB);
 router.patch("/:id", auth(USER_ROLE.SALON), configureFileUpload(),  ProductController.updateProductToDB);
 router.patch("/update-quantity/:id", auth(USER_ROLE.SALON), configureFileUpload(),  ProductController.updateProductQuantityToDB);

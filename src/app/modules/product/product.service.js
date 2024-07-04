@@ -16,13 +16,26 @@ exports.getProductsFromDB=async(user)=>{
     return result;
 };
 
+exports.getProductDetailsFromDB=async(id, user)=>{
+
+    const isExitsProduct = await Product.findById(id);
+    if(!isExitsProduct){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No Product Found");
+    }
+
+    if(isExitsProduct.salon.toString() !== user?._id.toString()){
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "Your Are not Authorized to Delete this Product");
+    }
+    return isExitsProduct;
+};
+
 exports.deleteProductFromDB=async(id, user)=>{
 
     const isExitsProduct = await Product.findById(id)
 
 
     if(isExitsProduct.salon.toString() !== user?._id.toString()){
-        throw new ApiError(StatusCodes.NOT_FOUND, "Your Are not Authorized to Delete this Product");
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "Your Are not Authorized to Delete this Product");
     }
 
     const result = await Product.findByIdAndDelete(id);
@@ -61,10 +74,10 @@ exports.updateProductQuantityToDB=async(id, user, payload)=>{
         throw new ApiError(StatusCodes.NOT_FOUND, "No Product Found");
     }
 
-    if(isExitsUser.salon !== user?._id){
+    if(isExitsProduct.salon.toString() !== user?._id.toString()){
         throw new ApiError(StatusCodes.NOT_FOUND, "Your Are Not authorized to change this Product")
     }
 
-    const Product = await Product.findByIdAndUpdate({_id: id}, payload, {new: true})
-    return Product;
+    const product = await Product.findByIdAndUpdate({_id: id}, payload, {new: true})
+    return product;
 };
