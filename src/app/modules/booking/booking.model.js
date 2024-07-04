@@ -12,7 +12,12 @@ const bookingSchema = new Schema(
             ref: "User",
             required: true,
         },
-        price: {
+        service: {
+            type: Schema.Types.ObjectId,
+            ref: "Service",
+            required: true,
+        },
+        bookingId: {
             type: String,
             required: true
         },

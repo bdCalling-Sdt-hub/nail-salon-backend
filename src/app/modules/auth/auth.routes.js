@@ -6,7 +6,7 @@ const auth = require("../../middlewares/auth.js");
 const { USER_ROLE } = require("../../../enums");
 
 router.post("/register-user", configureFileUpload(), AuthController.register);
-router.post("/email-verify", AuthController.verifyEmail);
+router.post("/verify-otp", AuthController.verifyEmail);
 router.post("/login", configureFileUpload(), AuthController.login);
 router.post("/forgot-password", AuthController.forgotPassword);
 router.post("/reset-password", AuthController.resetPassword);
