@@ -19,10 +19,9 @@ exports.createService=catchAsync(async(req, res)=>{
 })
 
 exports.getServiceByCategoryFromDB=catchAsync(async(req, res)=>{
-    const user=req.user;
-    const category=req.query.category;
+    const category=req.params.category;
 
-    const result = await ServicerService.getServiceByCategoryFromDB(user, category);
+    const result = await ServicerService.getServiceByCategoryFromDB(category);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,

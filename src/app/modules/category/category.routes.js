@@ -1,11 +1,13 @@
 const express = require("express");
-const router= express.Router();
 const configureFileUpload= require("../../middlewares/fileHandler");
 const CategoryController = require("./category.controller");
+const auth = require("../../middlewares/auth.js");
+const { USER_ROLE } = require("../../../enums");
+const router= express.Router();
 
-router.post("/create-category", configureFileUpload(), CategoryController.createCategory)
-router.delete("/delete-category/:id", CategoryController.deleteCategory)
-router.patch("/update-category/:id", configureFileUpload(), CategoryController.updateCategory)
-router.get("/get-category", CategoryController.getCategory)
+router.post("/create-category", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), configureFileUpload(), CategoryController.createCategory)
+router.delete("/delete-category/:id", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), CategoryController.deleteCategory)
+router.patch("/update-category/:id", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), configureFileUpload(), CategoryController.updateCategory)
+router.get("/get-category", auth(USER_ROLE.USER), CategoryController.getCategory)
 
 module.exports = router

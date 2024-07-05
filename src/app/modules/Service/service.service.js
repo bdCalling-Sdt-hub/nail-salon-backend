@@ -10,8 +10,14 @@ exports.createService=async(payload)=>{
     return result;
 };
 
-exports.getServiceByCategoryFromDB=async(user, category)=>{
-    const result = await Service.find({salon: user?._id}, {category: category});
+exports.getServiceByCategoryFromDB=async(category)=>{
+    const result = await Service.find({category: category}).populate({
+        path: 'salon',
+        populate: {
+            path: 'salon',
+            model: 'Salon'
+        }
+      })
     return result;
 };
 

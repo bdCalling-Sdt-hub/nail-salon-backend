@@ -8,10 +8,11 @@ const config = require("../../../config");
 const { emailVerification, forgetPassword } = require("../../../shared/emailTemplate");
 const { createToken } = require("../../../helper/jwtHelper");
 const unlinkFile= require("../../../util/unlinkFile");
+const Salon = require("../salon/salon.model");
 
 exports.createUserToDB = async(payload)=>{
 
-    const {email, password, confirmPassword, name} = payload;
+    const {email, password, confirmPassword, name, role} = payload;
     
     const isExistUser = await User.findOne({email});
     if(isExistUser){
@@ -34,14 +35,27 @@ exports.createUserToDB = async(payload)=>{
         oneTimeCode:newOtp
     }
 
-    const createUser= await User.create(data);
+    if(role === "SALON"){
+        const user = new User(data);
+        const salon = new Salon({user: user._id});
+        if(!salon){
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create Salon");
+        }
+        user.salon = salon._id;
+        await user.save();
+        await salon.save();
 
-    if(!createUser){
-        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create User");
+    }else{
+        const createUser= await User.create(data);
+        if(!createUser){
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create User");
+        }
+    
+        const emailData = emailVerification({email: email, otp: newOtp, name: name})
+        sendMail(emailData);
     }
 
-    const emailData = emailVerification({email: email, otp: newOtp, name: name})
-    sendMail(emailData);
+    
 
     // Schedule the task to set oneTimeCode to null after 3 minutes;
     setTimeout(async () => {
@@ -184,9 +198,11 @@ exports.updateProfile = async (user, payload) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
 
-    if(profileImage !== ""){
+    if(profileImage && isExistUser?.profileImage?.startsWith("https")){
+        othersData.profileImage = profileImage;
+    }else{
         unlinkFile(isExistUser.profileImage)
-        othersData.profileImage
+        othersData.profileImage = profileImage;
     }
 
     const isExistEmail = await User.findOne({email});
@@ -205,7 +221,7 @@ exports.updateProfile = async (user, payload) => {
 
 exports.getProfileFromDB = async (user) => {
 
-    const isExistUser = await User.findById(user._id);
+    const isExistUser = await User.findById(user._id).populate("salon");
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exits");
     }

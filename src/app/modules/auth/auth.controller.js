@@ -10,7 +10,7 @@ const generateOTP = require("../../../util/generateOTP");
 exports.register = catchAsync(async (req, res) => {
     
     await AuthService.createUserToDB(req.body);
-    return sendResponse(res, {
+    sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Register successfully! Please check your E-mail to verify.",

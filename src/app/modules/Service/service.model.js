@@ -15,6 +15,11 @@ const serviceSchema= new Schema(
             ref: "Category",
             required: true
         },
+        gender: {
+            type: String,
+            enum: ["Male", "Female"],
+            required: false
+        },
         salon: {
             type: Schema.Types.ObjectId,
             ref: "User",

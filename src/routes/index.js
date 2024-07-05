@@ -10,6 +10,7 @@ const ConversationRoutes =require("../app/modules/conversation/conversation.rout
 const MessageRoutes =require("../app/modules/message/message.routes");
 const ServiceRoutes =require("../app/modules/Service/service.routes");
 const ProductRoutes =require("../app/modules/product/product.routes");
+const SalonRoutes =require("../app/modules/salon/salon.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -56,6 +57,10 @@ const appRouteList = [
     {
         path: "/product",
         route: ProductRoutes
+    },
+    {
+        path: "/salon",
+        route: SalonRoutes
     }
 ]
 

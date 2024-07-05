@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+const {model, Schema} = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
     {
         name: {
             type: String,
@@ -39,6 +39,11 @@ const userSchema = new mongoose.Schema(
             enum: ["active", "inactive"],
             default: "active"
         },
+        salon: {
+            type: Schema.Types.ObjectId,
+            ref: "Salon",
+            required: true,
+        },
         role: {
             type: String,
             enum: ["SUPER_ADMIN", "ADMIN", "USER", "SALON"],
@@ -61,5 +66,5 @@ userSchema.statics.isAccountCreated = async (id) => {
     return isUserExist.accountInformation.status;
 };
 
-const User = mongoose.model("User", userSchema);
+const User = model("User", userSchema);
 module.exports = User;
