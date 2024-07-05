@@ -23,3 +23,14 @@ exports.updateSalon=catchAsync(async(req, res)=>{
         data: salon
     });
 });
+
+exports.getFeaturedSalon=catchAsync(async(req, res)=>{
+
+    const salon = await SalonService.getFeaturedSalon();
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Featured Salon Retrieved Successfully",
+        data: salon
+    });
+});

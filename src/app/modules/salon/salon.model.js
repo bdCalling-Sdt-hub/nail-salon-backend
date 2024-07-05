@@ -19,6 +19,14 @@ const salonSchema = new Schema(
             ref: "User",
             required: true,
         },
+        rating: {
+            type: Number,
+            default: 0
+        },
+        totalRating: {
+            type: Number,
+            default: 0
+        },
         gallery: [],
     },
     {timestamps: true}

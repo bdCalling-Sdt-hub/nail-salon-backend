@@ -29,3 +29,11 @@ exports.updateSalon=async(user, payload)=>{
     salon = await Salon.findByIdAndUpdate({_id: isExistSalon._id}, othersPayload, {new: true})
     return salon;
 }
+
+exports.getFeaturedSalon=async()=>{
+    const salons = await Salon.find({}).sort({ rating: -1 });
+    if(!salons){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
+    }
+    return salons;
+}
