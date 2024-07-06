@@ -60,3 +60,15 @@ exports.weeklyBooking= catchAsync(async(req, res)=>{
         data: booking
     })
 });
+
+exports.bookingListFromDB= catchAsync(async(req, res)=>{
+    const query = req.query;
+    const booking = await BookingService.bookingListFromDB(query);
+
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Booking Retrieve Successfully",
+        data: booking
+    })
+});

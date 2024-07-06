@@ -14,6 +14,10 @@ const salonSchema = new Schema(
             type: String,
             required: false
         },
+        featured: {
+            type: String,
+            required: false
+        },
         user: {
             type: Schema.Types.ObjectId,
             ref: "User",

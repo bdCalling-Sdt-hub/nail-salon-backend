@@ -1,11 +1,11 @@
 const pick = (obj, keys) => {
-  const finalObj = {};
 
-  for (const key of keys) {
-    finalObj[key] = obj[key];
-  }
+    const finalObj = {};
+    for (const key of keys) {
+        finalObj[key] = obj[key];
+    }
+    return finalObj;
 
-  return finalObj;
 };
 
 module.exports = pick;

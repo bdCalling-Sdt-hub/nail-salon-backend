@@ -136,3 +136,29 @@ exports.weeklyBooking= async(user)=>{
 
     return weeklyIncome;
 }
+
+
+exports.bookingListFromDB= async(queries)=>{
+    const {status, booking_date, page, limit} = queries;
+    let query= {};
+    if(status){
+        query.status = status
+    }
+    if(booking_date){
+        query.booking_date=booking_date
+    }
+
+    const pages = parseInt(page) || 1;
+    const size = parseInt(limit) || 10;
+    const skip = (pages - 1) * size;
+
+    const bookingList = await Booking.find(query).populate(["salon", "user"]).skip(skip).limit(size);
+    const count = await Booking.estimatedDocumentCount();
+    return {
+        data: bookingList,
+        meta: {
+            page: pages,
+            total: count
+        }
+    };
+}
