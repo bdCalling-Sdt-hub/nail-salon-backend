@@ -12,6 +12,7 @@ const ServiceRoutes =require("../app/modules/Service/service.routes");
 const ProductRoutes =require("../app/modules/product/product.routes");
 const SalonRoutes =require("../app/modules/salon/salon.routes");
 const ReviewRoutes =require("../app/modules/review/review.routes");
+const AdminRoutes =require("../app/modules/admin/admin.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -66,6 +67,10 @@ const appRouteList = [
     {
         path: "/review",
         route: ReviewRoutes
+    },
+    {
+        path: "/admin",
+        route: AdminRoutes
     }
 ]
 
