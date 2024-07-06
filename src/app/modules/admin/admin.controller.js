@@ -119,3 +119,26 @@ exports.getProfileFromDB = catchAsync(async (req, res) => {
         user: user
     });
 });
+
+
+exports.getOverviewFromDB = catchAsync(async (req, res) => {
+
+    const overview = await AdminService.getOverviewFromDB()
+    return sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Retrieve Data",
+        data: overview
+    });
+
+});
+
+exports.getIncomeGrowthFromDB = catchAsync(async (req, res) => {
+    const income = await AdminService.getIncomeGrowthFromDB()
+    return sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Retrieve Income growth",
+        data: income
+    });
+})

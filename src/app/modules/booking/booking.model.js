@@ -41,7 +41,8 @@ const bookingSchema = new Schema(
             type: String,
             required: true
         }
-    }
+    },
+    {timestamps: true}
 );
 
 const Booking = model("Booking", bookingSchema);

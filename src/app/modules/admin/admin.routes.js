@@ -15,5 +15,7 @@ router.post("/reset-password",configureFileUpload(), AdminController.resetPasswo
 router.patch("/update-profile", auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), configureFileUpload(), AdminController.updateProfile);
 router.post("/change-password", auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), configureFileUpload(), AdminController.changePassword);
 router.get("/get-profile", auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN),   AdminController.getProfileFromDB);
+router.get("/overview", auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN),   AdminController.getOverviewFromDB);
+router.get("/income-growth", auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN),   AdminController.getIncomeGrowthFromDB);
 
 module.exports = router;

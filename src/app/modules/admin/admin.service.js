@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const { createToken } = require("../../../helper/jwtHelper");
 const config = require("../../../config");
 const sendMail = require("../../../helper/emailHelper");
+const User = require("../user/user.model");
+const Booking = require("../booking/booking.model");
 
 exports.makeAdmin=async(payload)=>{
     const {password, ...othersPayload} = payload;
@@ -181,4 +183,147 @@ exports.getProfileFromDB = async (admin) => {
     }
 
     return isExistAdmin;
+};
+
+exports.getOverviewFromDB = async (year) => {
+    const totalUser =await User.countDocuments({role: "USER"});
+    const totalSalon =await  User.countDocuments({role: "SALON"});
+
+    const totalIncome = await Booking.aggregate([
+        { $group: { _id: null, totalIncomes: { $sum: "$price" } } },
+    ]);
+
+    //monthly sales calculate
+    const currentYear = new Date().getFullYear();
+    const userMonths = [
+        { name: "Jan", totalUser: 0 },
+        { name: "Feb", totalUser: 0 },
+        { name: "Mar", totalUser: 0 },
+        { name: "Apr", totalUser: 0 },
+        { name: "May", totalUser: 0 },
+        { name: "Jun", totalUser: 0 },
+        { name: "Jul", totalUser: 0 },
+        { name: "Aug", totalUser: 0 },
+        { name: "Sep", totalUser: 0 },
+        { name: "Oct", totalUser: 0 },
+        { name: "Nov", totalUser: 0 },
+        { name: "Dec", totalUser: 0 },
+    ];
+
+    const salonMonths = [
+        { name: "Jan", totalUser: 0 },
+        { name: "Feb", totalUser: 0 },
+        { name: "Mar", totalUser: 0 },
+        { name: "Apr", totalUser: 0 },
+        { name: "May", totalUser: 0 },
+        { name: "Jun", totalUser: 0 },
+        { name: "Jul", totalUser: 0 },
+        { name: "Aug", totalUser: 0 },
+        { name: "Sep", totalUser: 0 },
+        { name: "Oct", totalUser: 0 },
+        { name: "Nov", totalUser: 0 },
+        { name: "Dec", totalUser: 0 },
+    ];
+
+    const monthlyUser = await User.aggregate([
+        { $match: { role: "USER" } },
+        {
+            $project: {
+                year: { $year: "$createdAt" },
+                month: { $month: "$createdAt" }
+            }
+        },
+        { $match: { year: currentYear } },
+        {
+            $group: {
+                _id: { year: "$year", month: "$month" },
+                totalUsers: { $sum: 1 },
+            }
+        },
+      
+    ]);
+
+    const monthlySalon = await User.aggregate([
+        { $match: { role: "SALON" } },
+        {
+            $project: {
+                year: { $year: "$createdAt" },
+                month: { $month: "$createdAt" }
+            }
+        },
+        { $match: { year: currentYear } },
+        {
+            $group: {
+                _id: { year: "$year", month: "$month" },
+                totalUsers: { $sum: 1 },
+            }
+        },
+      
+    ]);
+
+    // Update the months array with the total user for each month
+    monthlyUser.forEach((user) => {
+        const monthIndex = user._id.month - 1;
+        userMonths[monthIndex].totalUser = user.totalUsers;
+    });
+    
+    // Update the months array with the total salon for each month
+    monthlySalon.forEach((salon) => {
+        const monthIndex = salon._id.month - 1;
+        salonMonths[monthIndex].totalUser = salon.totalUsers;
+    });
+
+    return {
+        totalUser,
+        totalSalon,
+        totalIncome: totalIncome[0]?.totalIncomes,
+        userMonths,
+        salonMonths,
+
+    };
+};
+
+
+exports.getIncomeGrowthFromDB = async (year) => {
+
+    const months = [
+        { name: "Jan", totalIncome: 0 },
+        { name: "Feb", totalIncome: 0 },
+        { name: "Mar", totalIncome: 0 },
+        { name: "Apr", totalIncome: 0 },
+        { name: "May", totalIncome: 0 },
+        { name: "Jun", totalIncome: 0 },
+        { name: "Jul", totalIncome: 0 },
+        { name: "Aug", totalIncome: 0 },
+        { name: "Sep", totalIncome: 0 },
+        { name: "Oct", totalIncome: 0 },
+        { name: "Nov", totalIncome: 0 },
+        { name: "Dec", totalIncome: 0 },
+    ];
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const startDate = new Date(currentYear, 0, 1);
+    const endDate = new Date(currentYear + 1, 0, 1);
+
+    const monthlyIncome = await Booking.aggregate([
+        { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
+        {
+            $group: {
+                _id: {
+                    year: { $year: '$createdAt' },
+                    month: { $month: '$createdAt' },
+                },
+                totalIncome: { $sum: '$price' },
+            },
+        }
+
+    ]);
+
+    monthlyIncome.forEach((income) => {
+        const monthIndex = income._id.month - 1;
+        months[monthIndex].totalIncome = income.totalIncome;
+    });
+
+    return months;
 };
