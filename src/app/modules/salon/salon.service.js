@@ -69,23 +69,23 @@ exports.salonListFromDB=async(queries)=>{
         { $match: query },
         {
           $lookup: {
-            from: "salons",
-            localField: "salon",
-            foreignField: "_id",
-            as: "salon"
-          }
+                from: "salons",
+                localField: "salon",
+                foreignField: "_id",
+                as: "salon"
+            }
         },
         {
-          $unwind: "$salon"
+            $unwind: "$salon"
         },
         {
-          $match: featured === "true" ? { "salon.featured": true } : {}
+            $match: featured === "true" ? { "salon.featured": true } : {}
         },
         { $skip: skip },
         { $limit: size }
     ]);
 
-    const count = await User.estimatedDocumentCount({role: "SALON"});
+    const count = await User.countDocuments({role: "SALON"});
 
     return {
         data: salonList,
