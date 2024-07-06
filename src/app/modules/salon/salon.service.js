@@ -31,9 +31,67 @@ exports.updateSalon=async(user, payload)=>{
 }
 
 exports.getFeaturedSalon=async()=>{
-    const salons = await Salon.find({}).sort({ rating: -1 });
+    const salons = await Salon.find({featured: true});
     if(!salons){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
     return salons;
+}
+
+exports.makeFeaturedSalon=async(id)=>{
+    const salon = await Salon.findById(id);
+    if(!salon){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
+    }
+    const result = await Salon.findByIdAndUpdate({_id: id}, {$set: {featured: !salon.featured}}, {new: true})
+
+    return result
+}
+
+exports.salonListFromDB=async(queries)=>{
+    const {featured, page, limit, location} = queries;
+    
+    let query= {
+        role: "SALON"
+    };
+
+
+    if(location){
+        let regex = new RegExp(location, 'i');
+        query.location = regex;
+    }
+
+    const pages = parseInt(page) || 1;
+    const size = parseInt(limit) || 10;
+    const skip = (pages - 1) * size;
+
+    const salonList = await User.aggregate([
+        { $match: query },
+        {
+          $lookup: {
+            from: "salons",
+            localField: "salon",
+            foreignField: "_id",
+            as: "salon"
+          }
+        },
+        {
+          $unwind: "$salon"
+        },
+        {
+          $match: featured === "true" ? { "salon.featured": true } : {}
+        },
+        { $skip: skip },
+        { $limit: size }
+    ]);
+
+    const count = await User.estimatedDocumentCount({role: "SALON"});
+
+    return {
+        data: salonList,
+        meta: {
+            page: pages,
+            total: count
+        }
+    };
 }

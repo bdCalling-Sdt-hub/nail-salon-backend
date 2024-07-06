@@ -25,12 +25,31 @@ exports.updateSalon=catchAsync(async(req, res)=>{
 });
 
 exports.getFeaturedSalon=catchAsync(async(req, res)=>{
-
     const salon = await SalonService.getFeaturedSalon();
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Featured Salon Retrieved Successfully",
+        data: salon
+    });
+});
+
+exports.makeFeaturedSalon=catchAsync(async(req, res)=>{
+    const salon = await SalonService.makeFeaturedSalon(req.params.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `${salon.featured ? "Make Featured Salon" : "Removed from Featured "}`,
+        data: salon
+    });
+});
+
+exports.salonListFromDB=catchAsync(async(req, res)=>{
+    const salon = await SalonService.salonListFromDB(req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Salon List Retrieved Successfully",
         data: salon
     });
 });

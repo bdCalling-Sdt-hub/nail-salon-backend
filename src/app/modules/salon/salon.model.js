@@ -15,7 +15,8 @@ const salonSchema = new Schema(
             required: false
         },
         featured: {
-            type: String,
+            type: Boolean,
+            default: false,
             required: false
         },
         user: {
