@@ -2,6 +2,8 @@ const ApiError = require("../../../errors/ApiError");
 const User = require("../user/user.model");
 const { StatusCodes } = require("http-status-codes");
 const Salon = require("../salon/salon.model");
+const Category = require("../category/category.model");
+const Review = require("../review/review.model");
 
 exports.updateSalon=async(user, payload)=>{
     const {name, location, gallery, ...othersPayload} = payload;
@@ -31,7 +33,8 @@ exports.updateSalon=async(user, payload)=>{
 }
 
 exports.getFeaturedSalon=async()=>{
-    const salons = await Salon.find({featured: true});
+    // const messageConversations = await Salon.distinct('conversationId');
+    const salons = await Salon.find({featured: true}).populate("user");
     if(!salons){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
@@ -93,5 +96,21 @@ exports.salonListFromDB=async(queries)=>{
             page: pages,
             total: count
         }
+    };
+}
+
+exports.salonDetailsFromDB=async(id)=>{
+    
+    const salon = await User.findOne({_id: id}).populate("salon");
+    const reviews = await Review.find({salon: id}).populate("user");
+    const category= await Category.find({});
+    if(!salon){
+        throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exists")
+    }
+
+    return {
+        salon,
+        category,
+        reviews
     };
 }

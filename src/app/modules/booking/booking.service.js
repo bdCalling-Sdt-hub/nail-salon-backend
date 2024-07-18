@@ -161,4 +161,17 @@ exports.bookingListFromDB= async(queries)=>{
             total: count
         }
     };
+};
+
+exports.bookingCompleteToDB= async(id, user)=>{
+    const booking = await Booking.findById(id);
+    const isExistUser = await Booking.findOne({user: new mongoose.Types.ObjectId(user?._id)})
+
+    if(!isExistUser){
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized to this resource");
+    }
+
+    const result = await Booking.findByIdAndUpdate({_id: id}, {$set: {status: "Complete"}}  , {new: true})
+    console.log(result)
+    return;
 }

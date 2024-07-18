@@ -13,6 +13,7 @@ const ProductRoutes =require("../app/modules/product/product.routes");
 const SalonRoutes =require("../app/modules/salon/salon.routes");
 const ReviewRoutes =require("../app/modules/review/review.routes");
 const AdminRoutes =require("../app/modules/admin/admin.routes");
+const FaqRoutes =require("../app/modules/faq/faq.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -71,6 +72,10 @@ const appRouteList = [
     {
         path: "/admin",
         route: AdminRoutes
+    },
+    {
+        path: "/faq",
+        route: FaqRoutes
     }
 ]
 

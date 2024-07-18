@@ -4,12 +4,6 @@ const unlinkFile= require("../../../util/unlinkFile");
 const Banner = require("./banner.model");
 
 exports.createBannerToDB = async (payload) => {
-  const {name} = payload;
-  const isExitsName = await Banner.findOne(name);
-
-  if(isExitsName){
-    throw new ApiError(StatusCodes.BAD_REQUEST, "This Name Already Taken")
-  }
   const createBanner = await Banner.create(payload);
   if (!createBanner) {
     throw new ApiError(StatusCodes.OK, "Failed to created banner");

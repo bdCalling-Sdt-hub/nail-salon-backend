@@ -5,6 +5,7 @@ const catchAsync = require("../../../shared/catchAsync");
 // const UserService = require("../user/user.server");
 const AuthService = require("./auth.service");
 const generateOTP = require("../../../util/generateOTP");
+const { StatusCodes } = require("http-status-codes");
 
 
 exports.register = catchAsync(async (req, res) => {
@@ -20,25 +21,24 @@ exports.register = catchAsync(async (req, res) => {
 
 exports.login = catchAsync(async (req, res) => {
 
-    const token= await AuthService.login(req.body);
+    const result = await AuthService.login(req.body);
         return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Login successfully!",
-        data: {
-            token
-        }
+        data: result
     });
   
 });
 
 
 exports.verifyEmail = catchAsync(async (req, res) => {
-    await AuthService.verifyEmail(req.body)
+    const data = await AuthService.verifyEmail(req.body)
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Email Verified Successfully",
+        data: data
     });
 });
 
@@ -52,18 +52,19 @@ exports.forgotPassword = catchAsync(async (req, res) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res) => {
-    await AuthService.resetPassword(req.body)
+    const user = req.user;
+    await AuthService.resetPassword(user, req.body)
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Password Updated Successfully"
-    });
+    })
 });
 
 exports.changePassword = catchAsync(async (req, res) => {
-    await AuthService.resetPassword(req.body)
+    await AuthService.changePassword(req.body)
     return sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: StatusCodes.OK,
         success: true,
         message: "Password Changed Successfully"
     });
@@ -105,12 +106,11 @@ exports.getProfileFromDB = catchAsync(async (req, res) => {
 
 exports.deleteProfileFromDB = catchAsync(async (req, res) => {
     const id = req.user._id;
-    const user = await AuthService.getProfileFromDB(id)
+    await AuthService.deleteProfileFromDB(id)
 
     return sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: "Retrieve Data",
-        user: user
+        message: "Delete User"
     });
 });

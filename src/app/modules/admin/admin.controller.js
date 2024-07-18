@@ -2,6 +2,7 @@ const AdminService = require("./admin.service");
 const catchAsync = require("../../../shared/catchAsync");
 const sendResponse = require("../../../shared/sendResponse");
 const { StatusCodes } = require("http-status-codes");
+const unlinkFile = require("../../../util/unlinkFile");
 
 exports.makeAdmin=catchAsync(async(req, res)=>{
     const payload = {
@@ -40,19 +41,18 @@ exports.getAdmin=catchAsync(async(req, res)=>{
 
 exports.deleteAdmin=catchAsync(async(req, res)=>{
     const id = req.params.id;
-    const result = await AdminService.deleteAdmin(id);
+    await AdminService.deleteAdmin(id);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
-        message: "Admin Created Successfully",
-        data: result
+        message: "Admin Deleted Successfully"
     })
 })
 
 exports.forgotPassword = catchAsync(async (req, res) => {
     await AdminService.forgotPassword(req.body)
     return sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: StatusCodes.OK,
         success: true,
         message: "Send OTP Successfully",
     });
@@ -61,7 +61,7 @@ exports.forgotPassword = catchAsync(async (req, res) => {
 exports.verifyEmail = catchAsync(async (req, res) => {
     await AdminService.verifyEmail(req.body)
     return sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: StatusCodes.OK,
         success: true,
         message: "Email Verified Successfully",
     });
@@ -71,16 +71,16 @@ exports.verifyEmail = catchAsync(async (req, res) => {
 exports.resetPassword = catchAsync(async (req, res) => {
     await AdminService.resetPassword(req.body)
     return sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: StatusCodes.OK,
         success: true,
         message: "Password Updated Successfully"
     });
 });
 
 exports.changePassword = catchAsync(async (req, res) => {
-    await AdminService.resetPassword(req.user, req.body)
+    await AdminService.changePassword(req.user, req.body)
     return sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: StatusCodes.OK,
         success: true,
         message: "Password Changed Successfully"
     });
@@ -102,7 +102,7 @@ exports.updateProfile = catchAsync(async (req, res) => {
     const result = await AdminService.updateProfile(user, data)
 
     sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: StatusCodes.OK,
         success: true,
         message: "Profile Updated Successfully",
         data: result
@@ -113,7 +113,7 @@ exports.getProfileFromDB = catchAsync(async (req, res) => {
 
     const user = await AdminService.getProfileFromDB(req.user)
     return sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: StatusCodes.OK,
         success: true,
         message: "Retrieve Data",
         user: user

@@ -35,6 +35,9 @@ exports.createUserToDB = async(payload)=>{
         oneTimeCode:newOtp
     }
 
+    const emailData = emailVerification({email: email, otp: newOtp, name: name})
+    sendMail(emailData);
+
     if(role === "SALON"){
         const user = new User(data);
         const salon = new Salon({user: user._id});
@@ -45,32 +48,21 @@ exports.createUserToDB = async(payload)=>{
         await user.save();
         await salon.save();
 
+        return;
     }else{
         const createUser= await User.create(data);
         if(!createUser){
             throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create User");
         }
-    
-        const emailData = emailVerification({email: email, otp: newOtp, name: name})
-        sendMail(emailData);
+
+        // Schedule the task to set oneTimeCode to null after 3 minutes;
+        setTimeout(async () => {
+            await User.updateOne(
+                { _id: createUser._id }, 
+                { $set: { oneTimeCode: null } }
+            );
+        }, 3 * 60 * 1000);
     }
-
-    
-
-    // Schedule the task to set oneTimeCode to null after 3 minutes;
-    setTimeout(async () => {
-        await User.updateOne(
-            { _id: createUser._id }, 
-            { $set: { oneTimeCode: null } }
-        );
-    }, 3 * 60 * 1000); 
-
-    // if the user if not verify account between 3 minutes then that temporary account delete after 5 minutes
-    setTimeout(async()=>{
-        if(!createUser.verified){
-            await User.findByIdAndDelete(createUser._id)
-        }
-    }, 5 *60 * 1000) // 10 minutes in milliseconds
 }
 
 exports.login = async(payload)=>{
@@ -82,7 +74,7 @@ exports.login = async(payload)=>{
     }
 
     if (!user.verified) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "Your email is not verified");
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "Your email is not verified");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -91,7 +83,10 @@ exports.login = async(payload)=>{
     }
     const token = createToken( { _id: user._id, role: user.role }, config.jwt.secret, config.jwt.expire_in)
 
-    return token;
+    return {
+        token,
+        role: user?.role
+    };
 }
 
 
@@ -102,7 +97,7 @@ exports.verifyEmail = async(payload)=>{
     if (!isUserExist) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User not Found");
     }
-    console.log(oneTimeCode)
+    
     if (isUserExist.oneTimeCode !== oneTimeCode) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "OTP Don't matched");
     }
@@ -114,6 +109,8 @@ exports.verifyEmail = async(payload)=>{
     };
 
     await User.findOneAndUpdate({ _id: isUserExist._id }, updateData, {new: true}).select(["-_id"]);
+    const token = createToken( { _id: isUserExist._id, role: isUserExist.role }, config.jwt.secret, config.jwt.expire_in)
+    return token;
 }
 
 exports.forgotPassword = async (payload) => {
@@ -137,26 +134,22 @@ exports.forgotPassword = async (payload) => {
     return;
 }
 
-exports.resetPassword = async (payload) => {
-    const { email, password, confirmPassword } = payload;
+exports.resetPassword = async (user, payload) => {
+    const { password, confirmPassword } = payload;
 
-    const user = await User.findOne({ email: email });
-    if (!user) {
+    const isExitsUser = await User.findById(user?._id);
+    if (!isExitsUser) {
       throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exists");
     }
   
     if (password !== confirmPassword) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "Password and confirm password does not match");
     }
-  
-    if (user.oneTimeCode === true) {
-        const salt = await bcrypt.genSalt(12);
-        const hashPassword = await bcrypt.hash(password, salt);
-        user.password = hashPassword;
-        user.oneTimeCode = null;
-        await user.save();
-    }
+    
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
 
+    await User.findByIdAndUpdate({_id: user?._id }, { $set:{password: hashPassword, oneTimeCode: null}}, {new: true})
     return;
 };
 
@@ -181,9 +174,11 @@ exports.changePassword = async (payload) => {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(newPass, salt);
 
-    await User.findByIdAndUpdate(user._id, {
-        $set: { password: hashPassword },
-    });
+    await User.findByIdAndUpdate(
+        {_id: user._id}, 
+        { password: hashPassword },
+        {new: true}
+    );
 
     return;
 };
@@ -198,11 +193,12 @@ exports.updateProfile = async (user, payload) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
 
+    console.log(profileImage)
     if(profileImage && isExistUser?.profileImage?.startsWith("https")){
         othersData.profileImage = profileImage;
     }else{
-        unlinkFile(isExistUser.profileImage)
         othersData.profileImage = profileImage;
+        unlinkFile(isExistUser.profileImage)
     }
 
     const isExistEmail = await User.findOne({email});
@@ -235,6 +231,5 @@ exports.deleteProfileFromDB = async (id) => {
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exits");
     }
-    await User.findByIdAndUpdate({_id: id}, {verified: false}, {new: true})
     return;
 };

@@ -53,3 +53,13 @@ exports.salonListFromDB=catchAsync(async(req, res)=>{
         data: salon
     });
 });
+
+exports.salonDetailsFromDB=catchAsync(async(req, res)=>{
+    const salon = await SalonService.salonDetailsFromDB(req.params.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Salon Details Retrieved Successfully",
+        data: salon
+    });
+});

@@ -6,9 +6,9 @@ const WishlistService =require("./wishlist.service");
 
 exports.addToWishlist = catchAsync(async (req, res) => {
     const user = req.user;
-    const serviceData = req.body;
+    const payload = req.params.id;
 
-    const result = await WishlistService.addToWishlistToDB(user, serviceData);
+    await WishlistService.addToWishlistToDB(user, payload);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -17,11 +17,10 @@ exports.addToWishlist = catchAsync(async (req, res) => {
     });
 });
 
-exports.getServicesFromWishlist = catchAsync(async (req, res) => {
+exports.getWishlistFromDB = catchAsync(async (req, res) => {
     const id = req.user._id;
-    const category = req.query.category;
-    const result = await WishlistService.getServicesFromWishlistDB(id, category);
 
+    const result = await WishlistService.getWishlistFromDB(id);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,

@@ -72,3 +72,15 @@ exports.bookingListFromDB= catchAsync(async(req, res)=>{
         data: booking
     })
 });
+
+exports.bookingCompleteToDB= catchAsync(async(req, res)=>{
+    const id = req.params.id;
+    const user = req.user;
+    await BookingService.bookingCompleteToDB(id, user);
+
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Booking Completed"
+    })
+});

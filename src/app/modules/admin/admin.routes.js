@@ -9,7 +9,7 @@ router.post("/", auth(USER_ROLE.SUPER_ADMIN),  configureFileUpload(), AdminContr
 router.get("/", auth(USER_ROLE.SUPER_ADMIN), AdminController.getAdmin);
 router.delete("/:id", auth(USER_ROLE.SUPER_ADMIN), AdminController.deleteAdmin);
 router.post("/login", configureFileUpload(), AdminController.adminLogin);
-router.post("/forgot-password", configureFileUpload(), AdminController.forgotPassword);
+router.post("/forgot-password", AdminController.forgotPassword);
 router.post("/verify-otp",configureFileUpload(), AdminController.verifyEmail);
 router.post("/reset-password",configureFileUpload(), AdminController.resetPassword);
 router.patch("/update-profile", auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), configureFileUpload(), AdminController.updateProfile);

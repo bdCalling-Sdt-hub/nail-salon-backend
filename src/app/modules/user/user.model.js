@@ -16,6 +16,7 @@ const userSchema = new Schema(
         },
         phone: {
             type: String,
+            default: "",
             required: false
         },
         verified: {
@@ -24,6 +25,7 @@ const userSchema = new Schema(
         },
         location: {
             type: String,
+            default: "",
             required: false
         },
         oneTimeCode: {
@@ -41,14 +43,12 @@ const userSchema = new Schema(
         },
         salon: {
             type: Schema.Types.ObjectId,
-            ref: "Salon",
-            required: true,
+            ref: "Salon"
         },
         role: {
             type: String,
             enum: ["SUPER_ADMIN", "ADMIN", "USER", "SALON"],
-            default: "USER",
-            required: true
+            default: "USER"
         }
     },
     {timestamps: true}

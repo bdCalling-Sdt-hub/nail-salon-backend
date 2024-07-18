@@ -7,9 +7,9 @@ const wishlistSchema = new Schema(
             ref: "User",
             required: true,
         },
-        service: {
+        salon: {
             type: Schema.Types.ObjectId,
-            ref: "Service",
+            ref: "User",
             required: true,
         }
     },

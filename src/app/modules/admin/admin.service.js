@@ -7,9 +7,17 @@ const config = require("../../../config");
 const sendMail = require("../../../helper/emailHelper");
 const User = require("../user/user.model");
 const Booking = require("../booking/booking.model");
+const generateOTP = require("../../../util/generateOTP");
+const { emailVerification, forgetPassword } = require("../../../shared/emailTemplate");
+const unlinkFile= require("../../../util/unlinkFile");
 
 exports.makeAdmin=async(payload)=>{
     const {password, ...othersPayload} = payload;
+
+    const isAdminExist = await Admin.findOne({email: payload?.email});
+    if(isAdminExist){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "This Email Already Taken");
+    }
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -47,7 +55,7 @@ exports.getAdmin=async()=>{
 }
 
 exports.deleteAdmin=async(id)=>{
-    return await Admin.findByIdAndUpdate({_id: id});
+    return await Admin.findByIdAndDelete({_id: id});
 }
 
 exports.forgotPassword = async (payload) => {
@@ -79,7 +87,7 @@ exports.verifyEmail = async(payload)=>{
         throw new ApiError(StatusCodes.NOT_FOUND, "Admin not Found");
     }
 
-    if (isUserExist.oneTimeCode !== oneTimeCode) {
+    if (isAdminExist.oneTimeCode !== oneTimeCode) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "OTP Don't matched");
     }
 
@@ -89,7 +97,8 @@ exports.verifyEmail = async(payload)=>{
         oneTimeCode: null,
     };
 
-    await User.findOneAndUpdate({ _id: isUserExist._id }, updateData, {new: true}).select(["-_id"]);
+    await Admin.findOneAndUpdate({ _id: isAdminExist._id }, updateData, {new: true});
+    return;
 }
 
 exports.resetPassword = async (payload) => {
@@ -121,9 +130,9 @@ exports.changePassword = async (admin, payload) => {
 
     const isExistAdmin = await Admin.findById(admin._id);
 
-    const isMatch = await bcrypt.compare(currentPass, isExistAdmin.password);
+    const isMatch = await bcrypt.compare(currentPass, isExistAdmin?.password);
     if (!isMatch) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, "Current Password is Wrong");
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "Current Password is Wrong");
     }
 
     if (currentPass == newPass) {
@@ -137,16 +146,16 @@ exports.changePassword = async (admin, payload) => {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(newPass, salt);
 
-    await Admin.findByIdAndUpdate(admin._id, {
-        $set: { password: hashPassword },
-    });
+    await Admin.findByIdAndUpdate(
+        {_id: admin._id}, 
+        { password: hashPassword },
+        {new: true}
+    );
 
     return;
 };
 
 exports.updateProfile = async (admin, payload) => {
-    const {email} = payload;
-    
     const {profileImage, ...othersData} = payload;
     
     const isExistAdmin = await Admin.findById(admin._id);
@@ -154,16 +163,11 @@ exports.updateProfile = async (admin, payload) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
 
-    if(profileImage && isExistAdmin?.profileImage?.startsWith("https")){
+    if(profileImage && isExistAdmin?.profileImage.startsWith("https")){
         othersData.profileImage = profileImage;
     }else{
-        unlinkFile(isExistAdmin.profileImage)
         othersData.profileImage = profileImage;
-    }
-
-    const isExistEmail = await Admin.findOne({email});
-    if (email && email === isExistEmail.email) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, "Email Already Taken");
+        unlinkFile(isExistAdmin.profileImage) 
     }
 
     const result = await Admin.findByIdAndUpdate(
