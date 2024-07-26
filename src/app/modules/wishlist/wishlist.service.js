@@ -33,7 +33,13 @@ exports.addToWishlistToDB = async (user, payload) => {
     return message;
 };
   
-exports.getWishlistFromDB = async (user) => {
-    const result = await Wishlist.find({ user: user._id });
+exports.getWishlistFromDB = async (id) => {
+    const result = await Wishlist.find({ user: id }).populate({
+        path: 'salon',
+        populate: {
+            path: 'salon',
+            model: 'Salon'
+        }
+    });
     return result;
 };

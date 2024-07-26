@@ -7,7 +7,7 @@ const configureFileUpload = require("../../middlewares/fileHandler");
 
 router.post("/", auth(USER_ROLE.SALON), configureFileUpload(), ServiceController.createService)
 router.patch("/:id", auth(USER_ROLE.SALON),  configureFileUpload(), ServiceController.updateServiceFromDB)
-router.delete("/:id", auth(USER_ROLE.SALON), ServiceController.deleteServiceFromDB)
+router.delete("/delete-service/:id", auth(USER_ROLE.SALON), ServiceController.deleteServiceFromDB)
 router.get("/:category", auth(USER_ROLE.SALON, USER_ROLE.USER), ServiceController.getServiceByCategoryFromDB)
 
 module.exports = router;

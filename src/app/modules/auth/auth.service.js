@@ -38,31 +38,19 @@ exports.createUserToDB = async(payload)=>{
     const emailData = emailVerification({email: email, otp: newOtp, name: name})
     sendMail(emailData);
 
-    if(role === "SALON"){
-        const user = new User(data);
-        const salon = new Salon({user: user._id});
-        if(!salon){
-            throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create Salon");
-        }
-        user.salon = salon._id;
-        await user.save();
-        await salon.save();
-
-        return;
-    }else{
-        const createUser= await User.create(data);
-        if(!createUser){
-            throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create User");
-        }
-
-        // Schedule the task to set oneTimeCode to null after 3 minutes;
-        setTimeout(async () => {
-            await User.updateOne(
-                { _id: createUser._id }, 
-                { $set: { oneTimeCode: null } }
-            );
-        }, 3 * 60 * 1000);
+    const createUser= await User.create(data);
+    if(!createUser){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create User");
     }
+
+    // Schedule the task to set oneTimeCode to null after 3 minutes;
+    setTimeout(async () => {
+        await User.updateOne(
+            { _id: createUser._id }, 
+            { $set: { oneTimeCode: null } }
+        );
+    }, 3 * 60 * 1000);
+    
 }
 
 exports.login = async(payload)=>{
@@ -153,10 +141,10 @@ exports.resetPassword = async (user, payload) => {
     return;
 };
 
-exports.changePassword = async (payload) => {
+exports.changePassword = async (id, payload) => {
     const { currentPass, newPass, confirmPass } = payload;
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(id);
 
     const isMatch = await bcrypt.compare(currentPass, user.password);
     if (!isMatch) {
@@ -174,12 +162,12 @@ exports.changePassword = async (payload) => {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(newPass, salt);
 
-    await User.findByIdAndUpdate(
-        {_id: user._id}, 
+    const result= await User.findByIdAndUpdate(
+        {_id: id}, 
         { password: hashPassword },
         {new: true}
     );
-
+    console.log(result)
     return;
 };
 
@@ -193,7 +181,7 @@ exports.updateProfile = async (user, payload) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
 
-    console.log(profileImage)
+    
     if(profileImage && isExistUser?.profileImage?.startsWith("https")){
         othersData.profileImage = profileImage;
     }else{
@@ -217,7 +205,7 @@ exports.updateProfile = async (user, payload) => {
 
 exports.getProfileFromDB = async (user) => {
 
-    const isExistUser = await User.findById(user._id).populate("salon");
+    const isExistUser = await User.findById(user._id).populate("bank");
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exits");
     }
@@ -225,11 +213,20 @@ exports.getProfileFromDB = async (user) => {
     return isExistUser;
 };
 
-exports.deleteProfileFromDB = async (id) => {
-
+exports.deleteProfileFromDB = async (id, password) => {
+    
     const isExistUser = await User.findById(id);
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exits");
     }
+
+    const isMatch = await bcrypt.compare(password, isExistUser.password);
+    if (!isMatch) {
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "Your credential doesn't match");
+    }
+
+    await User.findByIdAndDelete({_id: id})
+
+    console.log(isMatch)
     return;
 };

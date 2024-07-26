@@ -62,7 +62,8 @@ exports.resetPassword = catchAsync(async (req, res) => {
 });
 
 exports.changePassword = catchAsync(async (req, res) => {
-    await AuthService.changePassword(req.body)
+    const user = req.user._id;
+    await AuthService.changePassword(user, req.body)
     return sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
@@ -76,7 +77,7 @@ exports.updateProfile = catchAsync(async (req, res) => {
     let profileImage="";
     if (req.files && "profileImage" in req.files && req.files.profileImage[0]) {
         profileImage = `/images/${req.files.profileImage[0].filename}`;
-      }
+    }
 
     const data = {
         ...req.body,
@@ -106,7 +107,8 @@ exports.getProfileFromDB = catchAsync(async (req, res) => {
 
 exports.deleteProfileFromDB = catchAsync(async (req, res) => {
     const id = req.user._id;
-    await AuthService.deleteProfileFromDB(id)
+    const payload = req.body.password;
+    await AuthService.deleteProfileFromDB(id, payload)
 
     return sendResponse(res, {
         statusCode: httpStatus.OK,

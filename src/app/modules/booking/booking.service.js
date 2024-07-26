@@ -32,7 +32,7 @@ exports.myBooking= async(user, status)=>{
     const newBooking = await Booking.find({
         salon: user?._id,
         booking_date: { $gt: today } // Filter for booking dates greater than today
-    }).populate(["user", "salon", "service"]);
+    }).populate(["user", "salon"]);
 
     const bookingDates = [...new Set(newBooking.map(item => item.booking_date))];
 
@@ -40,51 +40,9 @@ exports.myBooking= async(user, status)=>{
 }
 
 exports.bookingDetails= async(id)=>{
-    
     const booking = await Booking.findById(id).populate(["user", "salon"]);
     return booking;
 }
-
-
-const week = async (userId) => {
-    try {
-        const today = new Date();
-        const firstDayOfWeek = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1);
-        const startOfWeek = new Date(today.setDate(firstDayOfWeek));
-        const endOfWeek = new Date(startOfWeek.getTime() + 6 * 24 * 60 * 60 * 1000);
-
-        // Ensure the start and end of the week are at midnight to cover the full days
-        startOfWeek.setHours(0, 0, 0, 0);
-        endOfWeek.setHours(23, 59, 59, 999);
-
-        console.log(`Start of week: ${startOfWeek}`);
-        console.log(`End of week: ${endOfWeek}`);
-
-        const weeklyTotalIncome2 = await Booking.aggregate([
-            {
-                $match: {
-                    salon: new mongoose.Types.ObjectId(userId),
-                    createdAt: {
-                        $gte: startOfWeek,
-                        $lt: endOfWeek
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: "$price" }
-                }
-            }
-        ]);
-
-        return weeklyTotalIncome2;
-    } catch (error) {
-        console.error(`Error: ${error}`);
-        return null;
-    }
-};
-
 
 
 exports.weeklyBooking= async(user)=>{
@@ -94,7 +52,7 @@ exports.weeklyBooking= async(user)=>{
 
     const weeklyBooking = await Booking.find({
         salon: user?._id,
-        booking_date: { $gte: startOfWeek, $lt: endOfWeek } // Filter for booking dates within the current week
+        createdAt: { $gte: startOfWeek, $lt: endOfWeek } // Filter for booking dates within the current week
     }).populate(["user", "salon"]);
 
     // here define all days with 0 income 
@@ -116,27 +74,49 @@ exports.weeklyBooking= async(user)=>{
         weeklyIncome[incomeIndex].income += parseInt(booking?.price);
     });
 
+    return weeklyIncome;
+}
 
-    
+exports.bookingSummary= async(user)=>{
+    const today = new Date();
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay()); // Start of current week (Sunday)
+    const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 7); // End of current week (Saturday)
 
+
+    // my balance
     const totalIncome = await Booking.aggregate([
         { $match: { salon: new mongoose.Types.ObjectId(user._id) } },
         { $group: { _id: null, totalIncomes: { $sum: "$price" } } },
     ]);
+    const myBalance = totalIncome[0]?.totalIncomes; 
 
-    const totalClient = await Booking.countDocuments({salon: user?._id})
+    // total client
+    const totalUser = await Booking.find({salon: user?._id}).populate("user");
+    const totalClient = [...new Set(totalUser.map(item => item.user._id))]?.length;
 
+    // weekly total income
+    const weeklyIncome = await Booking.aggregate([
+        {
+            $match: {
+                salon: new mongoose.Types.ObjectId(user._id),
+                createdAt: {
+                    $gte: startOfWeek,
+                    $lt: endOfWeek
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                total: { $sum: "$price" }
+            }
+        }
+    ]);
+    
+    const weeklyTotalIncome = weeklyIncome[0]?.total;
 
-    console.log("totalIncome", totalIncome[0].totalIncomes)
-    console.log("totalClient", totalClient)
-    const weekTOtalIncomes = await week(user._id)
-    console.log("weeklyTotalIncome", weekTOtalIncomes)
-
-
-
-    return weeklyIncome;
+    return {myBalance, weeklyTotalIncome, totalClient};
 }
-
 
 exports.bookingListFromDB= async(queries)=>{
     const {status, booking_date, page, limit} = queries;

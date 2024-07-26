@@ -10,8 +10,9 @@ const productSchema= new Schema(
             type: String,
             required: true
         },
-        salon:{
+        user:{
             type: Schema.Types.ObjectId,
+            ref: "User",
             required: true
         },
         productId: {

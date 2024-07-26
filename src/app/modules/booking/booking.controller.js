@@ -24,7 +24,6 @@ exports.myBooking= catchAsync(async(req, res)=>{
     const status =req.query.status;
 
     const {booking, bookingDates} = await BookingService.myBooking(user, status);
-    console.log(bookingDates)
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
@@ -57,6 +56,18 @@ exports.weeklyBooking= catchAsync(async(req, res)=>{
         statusCode : StatusCodes.OK,
         status: true,
         message: "Booking Retrieve Successfully",
+        data: booking
+    })
+});
+
+exports.bookingSummary= catchAsync(async(req, res)=>{
+    const user = req.user;
+    const booking = await BookingService.bookingSummary(user);
+
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Booking Summery Retrieve Successfully",
         data: booking
     })
 });

@@ -41,10 +41,39 @@ const userSchema = new Schema(
             enum: ["active", "inactive"],
             default: "active"
         },
-        salon: {
+        bank: {
             type: Schema.Types.ObjectId,
-            ref: "Salon"
+            ref: "Bank"
         },
+        openingTimes: {
+            type: String,
+            default: "",
+            required: false
+        },
+        openingDays: {
+            type: String,
+            default: "",
+            required: false
+        },
+        description: {
+            type: String,
+            default: "",
+            required: false
+        },
+        featured: {
+            type: Boolean,
+            default: false,
+            required: false
+        },
+        rating: {
+            type: Number,
+            default: 0
+        },
+        totalRating: {
+            type: Number,
+            default: 0
+        },
+        gallery: [],
         role: {
             type: String,
             enum: ["SUPER_ADMIN", "ADMIN", "USER", "SALON"],

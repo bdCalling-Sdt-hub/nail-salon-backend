@@ -13,7 +13,7 @@ exports.createProduct=async(payload)=>{
 
 exports.getProductsFromDB=async(user, type)=>{
     const query = {
-        salon: user?._id,
+        user: user?._id,
     };
 
     // Check if there is a query parameter for quantity
@@ -24,7 +24,7 @@ exports.getProductsFromDB=async(user, type)=>{
     // Check if there is a query parameter for expired date
     if(type === "expired"){
         const today = new Date().toISOString().split('T')[0];
-        query.expiredDate= { $gt: today };
+        query.expiredDate= { $lt: today };
     }
     
     const result = await Product.find(query);
@@ -38,7 +38,7 @@ exports.getProductDetailsFromDB=async(id, user)=>{
         throw new ApiError(StatusCodes.NOT_FOUND, "No Product Found");
     }
 
-    if(isExitsProduct.salon.toString() !== user?._id.toString()){
+    if(isExitsProduct.user.toString() !== user?._id.toString()){
         throw new ApiError(StatusCodes.UNAUTHORIZED, "Your Are not Authorized to Delete this Product");
     }
     return isExitsProduct;
@@ -49,7 +49,7 @@ exports.deleteProductFromDB=async(id, user)=>{
     const isExitsProduct = await Product.findById(id)
 
 
-    if(isExitsProduct.salon.toString() !== user?._id.toString()){
+    if(isExitsProduct.user.toString() !== user?._id.toString()){
         throw new ApiError(StatusCodes.UNAUTHORIZED, "Your Are not Authorized to Delete this Product");
     }
 
@@ -69,7 +69,7 @@ exports.updateProductToDB=async(id, user, payload)=>{
         throw new ApiError(StatusCodes.NOT_FOUND, "No Product Found");
     }
 
-    if(isExitsProduct.salon.toString() !== user?._id.toString()){
+    if(isExitsProduct.user.toString() !== user?._id.toString()){
         throw new ApiError(StatusCodes.NOT_FOUND, "Your Are Not authorized to change this Product")
     }
 
@@ -89,7 +89,7 @@ exports.updateProductQuantityToDB=async(id, user, payload)=>{
         throw new ApiError(StatusCodes.NOT_FOUND, "No Product Found");
     }
 
-    if(isExitsProduct.salon.toString() !== user?._id.toString()){
+    if(isExitsProduct.user.toString() !== user?._id.toString()){
         throw new ApiError(StatusCodes.NOT_FOUND, "Your Are Not authorized to change this Product")
     }
 

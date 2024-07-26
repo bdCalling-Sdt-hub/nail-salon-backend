@@ -1,23 +1,24 @@
-const { model, Schema } = require("mongoose");
+const {Schema, model} = require("mongoose")
 
-const serviceSchema= new Schema(
+const bankSchema = new Schema(
     {
-        serviceName: {
+        bankName: {
             type: String,
+            default: "",
             required: true
         },
-        price: {
+        branchCode: {
             type: String,
+            default: "",
             required: true
         },
-        category:{
-            type: Schema.Types.ObjectId,
-            ref: "Category",
+        bankAccountNumber: {
+            type: String,
+            default: "",
             required: true
         },
-        gender: {
+        accountHolderName: {
             type: String,
-            enum: ["Male", "Female", "Kids"],
             default: "",
             required: true
         },
@@ -25,10 +26,10 @@ const serviceSchema= new Schema(
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true
-        }
+        },
     },
     {timestamps: true}
 )
 
-const Service = model("Service", serviceSchema);
-module.exports=Service;
+const Bank = model("Bank", bankSchema);
+module.exports = Bank;

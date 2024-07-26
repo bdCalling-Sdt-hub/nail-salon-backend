@@ -11,13 +11,7 @@ exports.createService=async(payload)=>{
 };
 
 exports.getServiceByCategoryFromDB=async(category)=>{
-    const result = await Service.find({category: category}).populate({
-        path: 'salon',
-        populate: {
-            path: 'salon',
-            model: 'Salon'
-        }
-      })
+    const result = await Service.find({category: category}).populate("user")
     return result;
 };
 
@@ -30,7 +24,7 @@ exports.deleteServiceFromDB=async(id)=>{
 };
 
 exports.updateServiceFromDB=async(id, user, payload)=>{
-    const isValidUser = await Service.findById({salon: user?._id})
+    const isValidUser = await Service.findById({user: user?._id})
     if(!isValidUser){
         throw new ApiError(StatusCodes.NOT_FOUND, "Your Are Not authorized to change this service")
     }

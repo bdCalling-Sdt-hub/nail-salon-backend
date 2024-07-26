@@ -4,10 +4,12 @@ const { StatusCodes } = require("http-status-codes");
 const Salon = require("../salon/salon.model");
 const Category = require("../category/category.model");
 const Review = require("../review/review.model");
+const Service = require("../Service/service.model");
+const unlinkFile = require("../../../util/unlinkFile");
 
 exports.updateSalon=async(user, payload)=>{
-    const {name, location, gallery, ...othersPayload} = payload;
-    const isExistSalon = await Salon.findOne({user: user?._id});
+    const {name, location, gallery, profileImage, ...othersPayload} = payload;
+    const isExistSalon = await User.findById({_id: user?._id});
     if(!isExistSalon){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
@@ -27,14 +29,21 @@ exports.updateSalon=async(user, payload)=>{
         return salon;
     }
 
+    if(profileImage && isExistSalon?.profileImage?.startsWith("https")){
+        othersPayload.profileImage = profileImage;
+    }else{
+        othersPayload.profileImage = profileImage;
+        unlinkFile(isExistSalon.profileImage)
+    }
 
-    salon = await Salon.findByIdAndUpdate({_id: isExistSalon._id}, othersPayload, {new: true})
+
+    salon = await User.findByIdAndUpdate({_id: isExistSalon._id}, othersPayload, {new: true})
     return salon;
 }
 
 exports.getFeaturedSalon=async()=>{
-    // const messageConversations = await Salon.distinct('conversationId');
-    const salons = await Salon.find({featured: true}).populate("user");
+    
+    const salons = await User.find({featured: true});
     if(!salons){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
@@ -42,11 +51,11 @@ exports.getFeaturedSalon=async()=>{
 }
 
 exports.makeFeaturedSalon=async(id)=>{
-    const salon = await Salon.findById(id);
+    const salon = await User.findById(id);
     if(!salon){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
-    const result = await Salon.findByIdAndUpdate({_id: id}, {$set: {featured: !salon.featured}}, {new: true})
+    const result = await User.findByIdAndUpdate({_id: id}, {$set: {featured: !salon.featured}}, {new: true})
 
     return result
 }
@@ -113,4 +122,37 @@ exports.salonDetailsFromDB=async(id)=>{
         category,
         reviews
     };
+}
+
+exports.salonsFromDB=async(queries)=>{
+    const {search, rating, gender, category} = queries;
+    
+    let query= {};
+
+
+    if(search){
+        let regex = new RegExp(search, 'i');
+        query.serviceName= regex;
+
+        const results = await Service.find(query).populate('salon').exec();
+        const filteredResults = results.filter(item => item.salon && regex.test(item.salon.location));
+        return filteredResults;
+    }
+
+    if(gender){
+        let regex = new RegExp(gender, 'i');
+        query.gender = regex;
+    }
+    
+    if(category){
+        query.category = category;
+    }
+
+    if (rating) {
+        query.rating = { $gte: 0, $lte: Number(rating) };
+    }
+
+    console.log(query)
+
+    return result = await Service.find(query).populate("user");
 }

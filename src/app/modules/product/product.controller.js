@@ -13,7 +13,7 @@ exports.createProduct=catchAsync(async(req, res)=>{
     
     const data = {
         ...req.body,
-        salon: req.user._id,
+        user: req.user._id,
         image,
     };
 

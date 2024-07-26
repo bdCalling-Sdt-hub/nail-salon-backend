@@ -9,10 +9,16 @@ exports.updateSalon=catchAsync(async(req, res)=>{
     if (req.files && "gallery" in req.files && req.files.gallery[0]) {
         gallery = `/images/${req.files.gallery[0].filename}`;
     }
+
+    let profileImage="";
+    if (req.files && "profileImage" in req.files && req.files.profileImage[0]) {
+        profileImage = `/images/${req.files.profileImage[0].filename}`;
+    }
     
     const data = {
         ...req.body,
         gallery,
+        profileImage
     };
 
     const salon = await SalonService.updateSalon(req.user, data);
@@ -60,6 +66,16 @@ exports.salonDetailsFromDB=catchAsync(async(req, res)=>{
         statusCode: httpStatus.OK,
         success: true,
         message: "Salon Details Retrieved Successfully",
+        data: salon
+    });
+});
+
+exports.salonsFromDB=catchAsync(async(req, res)=>{
+    const salon = await SalonService.salonsFromDB(req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Salon List Retrieved Successfully",
         data: salon
     });
 });

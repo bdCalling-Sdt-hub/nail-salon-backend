@@ -8,7 +8,7 @@ exports.addToWishlist = catchAsync(async (req, res) => {
     const user = req.user;
     const payload = req.params.id;
 
-    await WishlistService.addToWishlistToDB(user, payload);
+    const result= await WishlistService.addToWishlistToDB(user, payload);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -18,7 +18,8 @@ exports.addToWishlist = catchAsync(async (req, res) => {
 });
 
 exports.getWishlistFromDB = catchAsync(async (req, res) => {
-    const id = req.user._id;
+    const id = req.user;
+    console.log("id", id)
 
     const result = await WishlistService.getWishlistFromDB(id);
     sendResponse(res, {

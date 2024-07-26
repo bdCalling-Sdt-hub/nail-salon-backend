@@ -6,7 +6,7 @@ const { StatusCodes } = require("http-status-codes");
 
 exports.createService=catchAsync(async(req, res)=>{
     const payload = {
-        salon: req.user._id,
+        user: req.user._id,
         ...req.body
     }
     const result = await ServicerService.createService(payload);
