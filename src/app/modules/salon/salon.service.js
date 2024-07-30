@@ -8,34 +8,31 @@ const Service = require("../Service/service.model");
 const unlinkFile = require("../../../util/unlinkFile");
 
 exports.updateSalon=async(user, payload)=>{
-    const {name, location, gallery, profileImage, ...othersPayload} = payload;
+    const { gallery, profileImage, ...othersPayload} = payload;
     const isExistSalon = await User.findById({_id: user?._id});
     if(!isExistSalon){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
 
     let salon;
-    if(name || location){
-        const data = {
-            name: name,
-            location: location
-        }
-        salon = await User.findByIdAndUpdate({_id: user._id}, data, {new: true})
-    }
 
     if(gallery){
-        isExistSalon.gallery.push(gallery);
+        gallery?.map((image, index)=>{
+            isExistSalon.gallery.push(image);
+        })
         await isExistSalon.save();
         return salon;
+        
     }
 
     if(profileImage && isExistSalon?.profileImage?.startsWith("https")){
         othersPayload.profileImage = profileImage;
-    }else{
-        othersPayload.profileImage = profileImage;
-        unlinkFile(isExistSalon.profileImage)
     }
 
+    if(profileImage){
+        othersPayload.profileImage = profileImage;
+        unlinkFile(isExistSalon?.profileImage)
+    }
 
     salon = await User.findByIdAndUpdate({_id: isExistSalon._id}, othersPayload, {new: true})
     return salon;

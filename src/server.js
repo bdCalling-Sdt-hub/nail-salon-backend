@@ -25,10 +25,8 @@ async function main() {
 
     socketHandler(io);
     global.io = io;
-    socketHandler(io);
 
-    //@ts-ignore
-    global.io = io;
+    
   } catch (error) {
     console.log("🤢 Failed to connect database", error);
   }

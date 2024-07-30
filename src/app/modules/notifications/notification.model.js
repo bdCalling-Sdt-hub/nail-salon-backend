@@ -1,20 +1,21 @@
 const {model, Schema} = require("mongoose");
 const notificationSchema= new Schema(
     {
-        message: { 
+        text: { 
             type: String, 
             required: true
         },
         read: { 
             type: Boolean, 
-            default: false
+            default: false,
+            required: false
         },
         user: { 
             type: Schema.Types.ObjectId, 
             ref: "User",
-            required: false
+            required: true
         },
-        messageType: {
+        type: {
             type: String,
             required: false
         }

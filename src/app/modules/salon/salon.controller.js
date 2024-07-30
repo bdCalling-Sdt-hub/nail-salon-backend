@@ -5,9 +5,9 @@ const SalonService = require("./salon.service");
 
 exports.updateSalon=catchAsync(async(req, res)=>{
 
-    let gallery;
-    if (req.files && "gallery" in req.files && req.files.gallery[0]) {
-        gallery = `/images/${req.files.gallery[0].filename}`;
+    let gallery = [];
+    if (req.files && "gallery" in req.files && req.files.gallery) {
+        gallery = req.files.gallery.map(file => `/images/${file.filename}`);
     }
 
     let profileImage="";

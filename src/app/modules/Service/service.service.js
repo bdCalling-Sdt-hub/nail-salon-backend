@@ -1,6 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const ApiError = require("../../../errors/ApiError");
 const Service = require("./service.model");
+const { default: mongoose } = require("mongoose");
 
 exports.createService=async(payload)=>{
     const result = await Service.create(payload);
@@ -20,11 +21,12 @@ exports.deleteServiceFromDB=async(id)=>{
     if(!result){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Service Found");
     }
-    return result;
+    await Service.findByIdAndDelete({_id: id});
+    return;
 };
 
 exports.updateServiceFromDB=async(id, user, payload)=>{
-    const isValidUser = await Service.findById({user: user?._id})
+    const isValidUser = await Service.findOne({user: new mongoose.Types.ObjectId(user?._id)})
     if(!isValidUser){
         throw new ApiError(StatusCodes.NOT_FOUND, "Your Are Not authorized to change this service")
     }

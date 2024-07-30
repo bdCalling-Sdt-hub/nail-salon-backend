@@ -43,7 +43,8 @@ const userSchema = new Schema(
         },
         bank: {
             type: Schema.Types.ObjectId,
-            ref: "Bank"
+            ref: "Bank",
+            default: null
         },
         openingTimes: {
             type: String,

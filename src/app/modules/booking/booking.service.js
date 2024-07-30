@@ -1,17 +1,37 @@
 const {StatusCodes} = require("http-status-codes");
 const ApiError = require("../../../errors/ApiError");
 const Booking = require("./booking.model");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const User = require("../user/user.model");
+const Notification = require("../notifications/notification.model");
 
-exports.createBooking= async(payload)=>{
+exports.createBooking= async(user, payload)=>{
+    const isExistUser = await User.findById(user._id);
+    if(!isExistUser){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No User Found to Booking Salons")
+    }
+
     const booking = await Booking.create(payload);
     if(!booking){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Booked A Booking")
     }
+
+    const data ={
+        text: `${isExistUser?.name} Booking On Your Salons`,
+        user: payload?.salon,
+    }
+
+    await Notification.create(data)
+
+    io.emit(`get-messages::${payload.salon}`, {
+        text: `${isExistUser?.name} Booking On Your Salons`,
+        user: payload?.salon
+    });
+
     return booking;
 }
 
-exports.myBooking= async(user, status)=>{
+exports.myBooking= async(user, status, date)=>{
     const filter  = user.role === "USER" ? {user : user?._id} : {salon : user?._id} 
     let query= {
         ...filter
@@ -19,6 +39,10 @@ exports.myBooking= async(user, status)=>{
 
     if(status === "Pending"){
         query.status = "Pending"
+    }
+
+    if(date){
+        query.booking_date = date;
     }
 
     if(status === "Complete"){
@@ -113,7 +137,7 @@ exports.bookingSummary= async(user)=>{
         }
     ]);
     
-    const weeklyTotalIncome = weeklyIncome[0]?.total;
+    const weeklyTotalIncome = weeklyIncome[0]?.total || 0;
 
     return {myBalance, weeklyTotalIncome, totalClient};
 }
@@ -154,4 +178,103 @@ exports.bookingCompleteToDB= async(id, user)=>{
     const result = await Booking.findByIdAndUpdate({_id: id}, {$set: {status: "Complete"}}  , {new: true})
     console.log(result)
     return;
+}
+
+// weekly summary for salon
+exports.weeklySummaryFromDB= async(user)=>{
+
+    // week calculate
+    const today = new Date();
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay()); // Start of current week (Sunday)
+    const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 7); // End of current week (Saturday)
+
+    // weekly total client
+    const weeklyClients = await Booking.aggregate([
+        {
+            $match: {
+                salon: new mongoose.Types.ObjectId(user._id),
+                createdAt: { $gte: startOfWeek, $lt: endOfWeek }
+            }
+        },
+            {
+                $group: {
+                    _id: null,
+                    uniqueUsers: { $addToSet: "$user" }
+                }
+            },
+        {
+            $project: {
+                _id: 0,
+                count: { $size: "$uniqueUsers" }
+            }
+        }
+    ]);
+    const weeklyTotalClient = weeklyClients[0]?.count || 0;
+
+    // weekly repeated client;
+    const repeatedClient = await Booking.aggregate([
+        {
+            $match: {
+                salon: new mongoose.Types.ObjectId(user._id),
+                createdAt: {
+                    $gte: startOfWeek,
+                    $lt: endOfWeek
+                }
+            }
+        },
+        {
+            $group: {
+                _id: "$user",
+                bookingCount: { $sum: 1 }
+            }
+        },
+        {
+            $match: {
+                bookingCount: { $gt: 1 }
+            }
+        },
+        {
+            $count: "repeatClientCount"
+        }
+    ]);
+    const repeatClients = repeatedClient[0]?.repeatClientCount || 0;
+
+    // weekly new client;
+    const newTotalClients = await Booking.aggregate([
+        {
+            $match: {
+                salon: new mongoose.Types.ObjectId(user._id),
+                createdAt: {
+                    $gte: startOfWeek,
+                    $lt: endOfWeek
+                }
+            }
+        },
+        {
+            $group: {
+                _id: "$user",
+                bookingCount: { $sum: 1 }
+            }
+        },
+        {
+            $match: {
+                bookingCount: { $eq: 1 }
+            }
+        },
+        {
+            $count: "newClientCount"
+        }
+    ]);
+    const newClients = newTotalClients[0]?.newClientCount || 0;
+
+
+    // all clients;
+    const totalClient = await Booking.find({
+        salon: user?._id,
+        createdAt: { $gte: startOfWeek, $lt: endOfWeek } // Filter for booking dates within the current week
+    }).populate("user");
+    const totalClientList = [...new Set(totalClient.map(item => item.user))] || [];
+
+    
+    return {weeklyTotalClient, repeatClients, newClients, totalClientList};
 }

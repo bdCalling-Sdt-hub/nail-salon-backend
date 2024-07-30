@@ -5,12 +5,9 @@ const { StatusCodes } = require("http-status-codes");
 
 
 exports.createBooking= catchAsync(async(req, res)=>{
-    const user = req.user._id;
-    const data = {
-        user,
-        ...req.body,
-    }
-    const booking = await BookingService.createBooking(data);
+    const user = req.user;
+    const payload = { user: user?._id, ...req.body}
+    const booking = await BookingService.createBooking(user, payload);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
@@ -22,8 +19,9 @@ exports.createBooking= catchAsync(async(req, res)=>{
 exports.myBooking= catchAsync(async(req, res)=>{
     const user =req.user;
     const status =req.query.status;
+    const date =req.query.date;
 
-    const {booking, bookingDates} = await BookingService.myBooking(user, status);
+    const {booking, bookingDates} = await BookingService.myBooking(user, status, date);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
@@ -84,6 +82,7 @@ exports.bookingListFromDB= catchAsync(async(req, res)=>{
     })
 });
 
+
 exports.bookingCompleteToDB= catchAsync(async(req, res)=>{
     const id = req.params.id;
     const user = req.user;
@@ -93,5 +92,18 @@ exports.bookingCompleteToDB= catchAsync(async(req, res)=>{
         statusCode : StatusCodes.OK,
         status: true,
         message: "Booking Completed"
+    })
+});
+
+// weekly summary for salon
+exports.weeklySummaryFromDB= catchAsync(async(req, res)=>{
+    const user = req.user;
+    const result = await BookingService.weeklySummaryFromDB(user);
+
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Weekly Summary",
+        data: result
     })
 });
