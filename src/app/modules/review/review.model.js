@@ -18,7 +18,8 @@ const reviewSchema = new Schema(
             required: true,
         },
 
-    }
+    },
+    {timestamps: true}
 );
 
 const Review = model("Review", reviewSchema);

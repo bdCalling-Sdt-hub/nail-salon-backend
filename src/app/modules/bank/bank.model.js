@@ -15,6 +15,8 @@ const bankSchema = new Schema(
         bankAccountNumber: {
             type: String,
             default: "",
+            maxlength: 16,
+            minlength: 16,  
             required: true
         },
         accountHolderName: {

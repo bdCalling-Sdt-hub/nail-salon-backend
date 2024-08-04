@@ -1,12 +1,11 @@
 const { StatusCodes } = require("http-status-codes");
 const ApiError = require("../../../errors/ApiError");
 const Review = require("./review.model");
-const Salon = require("../salon/salon.model");
 const { default: mongoose } = require("mongoose");
+const User = require("../user/user.model");
 
 exports.createReview=async(payload)=>{
-    const {salon} = payload;
-    const isSalonExist = await Salon.findOne({user: new mongoose.Types.ObjectId(salon)});
+    const isSalonExist = await User.findOne({_id: new mongoose.Types.ObjectId(payload.salon)});
     if(!isSalonExist){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
@@ -30,11 +29,11 @@ exports.createReview=async(payload)=>{
     if(!result){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed To create Review")
     }
-    return result;
+    return payload;
 };
 
 exports.getReview=async(id)=>{
-    const isSalonExist = await Review.find({salon: new mongoose.Types.ObjectId(id)}).populate("user");
+    const isSalonExist = await Review.find({salon: new mongoose.Types.ObjectId(id)});
     if(!isSalonExist){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }

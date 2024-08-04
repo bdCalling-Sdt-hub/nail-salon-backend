@@ -18,10 +18,8 @@ exports.addToWishlist = catchAsync(async (req, res) => {
 });
 
 exports.getWishlistFromDB = catchAsync(async (req, res) => {
-    const id = req.user;
-    console.log("id", id)
-
-    const result = await WishlistService.getWishlistFromDB(id);
+    const user = req.user;
+    const result = await WishlistService.getWishlistFromDB(user);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,

@@ -1,11 +1,12 @@
 const ApiError = require("../../../errors/ApiError");
 const User = require("../user/user.model");
 const { StatusCodes } = require("http-status-codes");
-const Salon = require("../salon/salon.model");
 const Category = require("../category/category.model");
 const Review = require("../review/review.model");
+const Wishlist = require("../wishlist/wishlist.model");
 const Service = require("../Service/service.model");
 const unlinkFile = require("../../../util/unlinkFile");
+const mongoose = require("mongoose");
 
 exports.updateSalon=async(user, payload)=>{
     const { gallery, profileImage, ...othersPayload} = payload;
@@ -14,36 +15,32 @@ exports.updateSalon=async(user, payload)=>{
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
 
-    let salon;
-
     if(gallery){
         gallery?.map((image, index)=>{
             isExistSalon.gallery.push(image);
         })
         await isExistSalon.save();
-        return salon;
-        
     }
 
     if(profileImage && isExistSalon?.profileImage?.startsWith("https")){
         othersPayload.profileImage = profileImage;
     }
 
-    if(profileImage){
+    if(profileImage){s
         othersPayload.profileImage = profileImage;
         unlinkFile(isExistSalon?.profileImage)
     }
 
-    salon = await User.findByIdAndUpdate({_id: isExistSalon._id}, othersPayload, {new: true})
+    const salon = await User.findByIdAndUpdate({_id: isExistSalon._id}, othersPayload, {new: true})
     return salon;
 }
 
 exports.getFeaturedSalon=async()=>{
-    
-    const salons = await User.find({featured: true});
+    const salons = await User.find({featured: true}).select("_id profileImage featured rating totalRating location name");
     if(!salons){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
     }
+    
     return salons;
 }
 
@@ -106,10 +103,14 @@ exports.salonListFromDB=async(queries)=>{
 }
 
 exports.salonDetailsFromDB=async(id)=>{
-    
-    const salon = await User.findOne({_id: id}).populate("salon");
-    const reviews = await Review.find({salon: id}).populate("user");
-    const category= await Category.find({});
+    // salon list
+    const salon = await User.findOne({_id: id}).select("_id name email profileImage phone location openingTimes openingDays description rating totalRating gallery");
+
+    // all review for salon
+    const reviews = await Review.find({salon: id}).populate({path: 'user', select: "name profileImage"}).select("_id comment createdAt");
+
+    // all category
+    const category= await Category.find({}).select("_id name image");
     if(!salon){
         throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exists")
     }
@@ -121,35 +122,67 @@ exports.salonDetailsFromDB=async(id)=>{
     };
 }
 
-exports.salonsFromDB=async(queries)=>{
-    const {search, rating, gender, category} = queries;
+exports.salonsFromDB = async (queries, user) => {
+    const { search, rating, gender, category } = queries;
     
-    let query= {};
-
-
-    if(search){
-        let regex = new RegExp(search, 'i');
-        query.serviceName= regex;
-
-        const results = await Service.find(query).populate('salon').exec();
-        const filteredResults = results.filter(item => item.salon && regex.test(item.salon.location));
-        return filteredResults;
-    }
-
-    if(gender){
-        let regex = new RegExp(gender, 'i');
-        query.gender = regex;
+    let queryConditions = [];
+    
+    // Search condition
+    if (search) {
+        const userIds = await Service.find({ serviceName: { $regex: search, $options: "i" } }).distinct("user");
+        const searchCondition = {
+            $or: [
+                { location: { $regex: search, $options: "i" } },
+                { _id: { $in: userIds } }
+            ]
+        };
+        queryConditions.push(searchCondition);
     }
     
-    if(category){
-        query.category = category;
+    // Gender condition
+    if (gender) {
+        const genderCondition = {
+            _id: { $in: await Service.find({ gender: gender }).distinct("user") }
+        };
+        queryConditions.push(genderCondition);
     }
-
+    
+    // Category condition
+    if (category) {
+        const categoryCondition = {
+            _id: { $in: await Service.find({ category: category }).distinct("user") }
+        };
+        queryConditions.push(categoryCondition);
+    }
+    
+    // Rating condition
     if (rating) {
-        query.rating = { $gte: 0, $lte: Number(rating) };
+        const ratingCondition = {
+            rating: { $gte: 0, $lte: Number(rating) }
+        };
+        queryConditions.push(ratingCondition);
     }
+    
+    // Combine conditions
+    const query = queryConditions.length > 0 ? { $and: queryConditions } : {};
+    const result = await User.find(query).select("_id name profileImage rating location");
 
-    console.log(query)
+    // all wishlist
+    const userId = new mongoose.Types.ObjectId(user._id);
+    const wishList = await Wishlist.find({ user: userId })
+        .populate({
+            path: 'salon',
+            select: "_id name profileImage location rating totalRating"
+        })
+        .select("_id salon");
+    const salonIds = wishList.map((item) => item.salon._id.toString());
 
-    return result = await Service.find(query).populate("user");
-}
+    // Add featured property to each salon if it matches a salon in the wishlist
+    const salons = result.map((item) => {
+        const salon = item.toObject();
+        const isFeatured = salonIds.includes(salon._id.toString());
+        return { ...salon, featured: isFeatured };
+    });
+
+    return salons;
+};

@@ -8,12 +8,11 @@ exports.createReview=catchAsync(async(req, res)=>{
         user: req.user._id,
         ...req.body
     }
-    const result = await ReviewService.createReview(payload);
+    await ReviewService.createReview(payload);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
-        message: "Review Created Successfully",
-        data: result
+        message: "Review Created Successfully"
     })
 })
 

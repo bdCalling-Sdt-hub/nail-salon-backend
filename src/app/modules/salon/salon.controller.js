@@ -31,7 +31,8 @@ exports.updateSalon=catchAsync(async(req, res)=>{
 });
 
 exports.getFeaturedSalon=catchAsync(async(req, res)=>{
-    const salon = await SalonService.getFeaturedSalon();
+    const user = req.user;
+    const salon = await SalonService.getFeaturedSalon(user);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -45,8 +46,7 @@ exports.makeFeaturedSalon=catchAsync(async(req, res)=>{
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: `${salon.featured ? "Make Featured Salon" : "Removed from Featured "}`,
-        data: salon
+        message: `${salon.featured ? "Make Featured" : "Removed from Featured "}`
     });
 });
 
@@ -71,7 +71,8 @@ exports.salonDetailsFromDB=catchAsync(async(req, res)=>{
 });
 
 exports.salonsFromDB=catchAsync(async(req, res)=>{
-    const salon = await SalonService.salonsFromDB(req.query);
+    const user = req.user;
+    const salon = await SalonService.salonsFromDB(req.query, user);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

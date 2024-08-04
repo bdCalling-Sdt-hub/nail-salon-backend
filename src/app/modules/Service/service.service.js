@@ -12,8 +12,13 @@ exports.createService=async(payload)=>{
 };
 
 exports.getServiceByCategoryFromDB=async(category)=>{
-    const result = await Service.find({category: category}).populate("user")
-    return result;
+    const result = await Service.find({category: category}).populate({
+        path: 'user',
+        select: "_id name profileImage location rating"
+    }).select("user");
+
+    const salon = [...new Set(result.map(item => item.user))];
+    return salon;
 };
 
 exports.deleteServiceFromDB=async(id)=>{
@@ -37,4 +42,15 @@ exports.updateServiceFromDB=async(id, user, payload)=>{
 
     const service = await Service.findByIdAndUpdate({_id: id}, payload, {new: true})
     return service;
+};
+
+
+exports.serviceListFromDB=async(category, user)=>{
+    const services = await Service.find({category: category, user: user}).select("_id serviceName price");
+    return services;
+};
+
+exports.categoryServiceFromDB=async(category, user)=>{
+    const services = await Service.find({category: category}).select("_id serviceName price");
+    return services;
 };

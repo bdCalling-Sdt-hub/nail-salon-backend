@@ -20,7 +20,6 @@ exports.createService=catchAsync(async(req, res)=>{
 
 exports.getServiceByCategoryFromDB=catchAsync(async(req, res)=>{
     const category=req.params.category;
-
     const result = await ServicerService.getServiceByCategoryFromDB(category);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
@@ -41,6 +40,7 @@ exports.deleteServiceFromDB=catchAsync(async(req, res)=>{
     })
 })
 
+
 exports.updateServiceFromDB=catchAsync(async(req, res)=>{
     const user = req.user;
     const id = req.params.id;
@@ -50,6 +50,29 @@ exports.updateServiceFromDB=catchAsync(async(req, res)=>{
         statusCode : StatusCodes.OK,
         status: true,
         message: "Service Updated Successfully",
+        data: result
+    })
+})
+
+exports.serviceListFromDB=catchAsync(async(req, res)=>{
+    const user = req.user;
+    const category = req.params.category;
+    const result = await ServicerService.serviceListFromDB(category, user);
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Service List Successfully",
+        data: result
+    })
+})
+
+exports.categoryServiceFromDB=catchAsync(async(req, res)=>{
+    const category = req.params.category;
+    const result = await ServicerService.categoryServiceFromDB(category);
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Service List Successfully",
         data: result
     })
 })

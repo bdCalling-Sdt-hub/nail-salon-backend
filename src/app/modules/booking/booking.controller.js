@@ -107,3 +107,30 @@ exports.weeklySummaryFromDB= catchAsync(async(req, res)=>{
         data: result
     })
 });
+
+// weekly all client;
+exports.weeklyClientsFromDB= catchAsync(async(req, res)=>{
+    const user = req.user;
+    const status =req.query.status;
+    const result = await BookingService.weeklyClientsFromDB(user, status);
+
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Weekly Summary",
+        data: result
+    })
+});
+
+// weekly all client;
+exports.lastBookingFromDB= catchAsync(async(req, res)=>{
+    const id = req.params.id;
+    const result = await BookingService.lastBookingFromDB(id);
+
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Last Booking Details",
+        data: result
+    })
+});

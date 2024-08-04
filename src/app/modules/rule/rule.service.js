@@ -14,7 +14,7 @@ exports.createPrivacyPolicyToDB = async (payload) => {
 }
 
 exports.getPrivacyPolicyFromDB = async () => {
-    const result = await Rule.findOne({ type: 'privacy' })
+    const result = await Rule.findOne({ type: 'privacy' }).select("content")
     if (!result) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Privacy policy doesn't exist!")
     }
@@ -46,7 +46,7 @@ exports.createTermsAndConditionToDB = async (payload) => {
 }
 
 exports.getTermsAndConditionFromDB = async () => {
-    const result = await Rule.findOne({ type: 'terms' })
+    const result = await Rule.findOne({ type: 'terms' }).select("content")
     if (!result) {
         throw new ApiError(
         StatusCodes.BAD_REQUEST,
@@ -70,7 +70,7 @@ exports.updateTermsAndConditionToDB = async (payload) => {
     return result
 }
 
-//privacy policy
+//about us
 exports.createAboutToDB = async (payload) => {
     const isExistAbout = await Rule.findOne({ type: 'about' })
     if (isExistAbout) {
@@ -82,7 +82,7 @@ exports.createAboutToDB = async (payload) => {
 }
 
 exports.getAboutFromDB = async () => {
-    const result = await Rule.findOne({ type: 'about' })
+    const result = await Rule.findOne({ type: 'about' }).select("content")
     if (!result) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "About doesn't exist!")
     }

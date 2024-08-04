@@ -21,8 +21,8 @@ exports.createBooking= async(user, payload)=>{
         user: payload?.salon,
     }
 
-    await Notification.create(data)
 
+    await Notification.create(data)
     io.emit(`get-messages::${payload.salon}`, {
         text: `${isExistUser?.name} Booking On Your Salons`,
         user: payload?.salon
@@ -37,19 +37,26 @@ exports.myBooking= async(user, status, date)=>{
         ...filter
     }
 
-    if(status === "Pending"){
-        query.status = "Pending"
+    if (status) {
+        if (status === "Pending") {
+            query.status = "Pending";
+        } else if (status === "Complete") {
+            query.status = "Complete";
+        } else {
+            query.booking_date = status;
+        }
     }
 
-    if(date){
-        query.booking_date = date;
-    }
-
-    if(status === "Complete"){
-        query.status = "Complete"
-    }
-
-    const booking = await Booking.find(query).populate(["user", "salon"]);
+    const booking = await Booking.find(query).populate([
+        {
+            path: 'salon',
+            select: "name location phone"
+        },
+        {
+            path: "user",
+            select: "name profileImage"
+        }
+    ]).select("_id user salon price bookingId booking_date transactionId booking_time");
 
     // Filter bookings for salon by booking_date greater than today
     const today = new Date().toISOString().split('T')[0];
@@ -64,7 +71,20 @@ exports.myBooking= async(user, status, date)=>{
 }
 
 exports.bookingDetails= async(id)=>{
-    const booking = await Booking.findById(id).populate(["user", "salon"]);
+    const booking = await Booking.findById(id).populate([
+        {
+            path: 'salon',
+            select: "name location phone"
+        },
+        {
+            path: "user",
+            select: "name profileImage"
+        },
+        {
+            path: "service",
+            select: "serviceName price"
+        }
+    ]).select("_id user salon price bookingId booking_date transactionId booking_time");;
     return booking;
 }
 
@@ -269,12 +289,132 @@ exports.weeklySummaryFromDB= async(user)=>{
 
 
     // all clients;
-    const totalClient = await Booking.find({
-        salon: user?._id,
-        createdAt: { $gte: startOfWeek, $lt: endOfWeek } // Filter for booking dates within the current week
-    }).populate("user");
-    const totalClientList = [...new Set(totalClient.map(item => item.user))] || [];
+    const uniqueUserIds = await Booking.distinct("user", { salon: user?._id });
+    const totalClients = await User.countDocuments({ _id: { $in: uniqueUserIds } });
+
+    return {totalClients, weeklyTotalClient, repeatClients, newClients};
+}
+
+// weekly clients for salon
+exports.weeklyClientsFromDB= async(user, status)=>{
+    // week
+    const today = new Date();
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay()); // Start of current week (Sunday)
+    const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 7); // End of current week (Saturday)
+
+    let uniqueUserIds;
+    if( status === "weeklyTotal"){
+        uniqueUserIds = await Booking.distinct("user", 
+            { 
+                salon: user?._id, 
+                createdAt: {
+                    $gte: startOfWeek,
+                    $lt: endOfWeek
+                } 
+            }
+        )
+    }
+
+    // new Clients; 
+    if( status ===  "newClient"){
+        const newClient = await Booking.aggregate([
+            {
+                $match: {
+                    salon: new mongoose.Types.ObjectId(user._id),
+                    createdAt: {
+                        $gte: startOfWeek,
+                        $lt: endOfWeek
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$user",
+                    bookingCount: { $sum: 1 }
+                }
+            },
+            {
+                $match: {
+                    bookingCount: { $eq: 1 }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    newClientIds: { $push: "$_id" }
+                }
+            }
+        ]);
+        uniqueUserIds = newClient[0]?.newClientIds || [];
+    }
+
+    // repeated client
+    if( status === "repeated"){
+        const multipleBookingsClients = await Booking.aggregate([
+            {
+                $match: {
+                    salon: new mongoose.Types.ObjectId(user._id), // Ensure user._id is an ObjectId
+                    createdAt: {
+                    $gte: startOfWeek,
+                    $lt: endOfWeek
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$user",
+                    bookingCount: { $sum: 1 }
+                }
+            },
+            {
+                $match: {
+                    bookingCount: { $gt: 1 } // Users with more than one booking
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    multipleBookingUserIds: { $push: "$_id" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    multipleBookingUserIds: 1
+                }
+            }
+        ]);
+        uniqueUserIds = multipleBookingsClients[0].multipleBookingUserIds;
+    }
 
     
-    return {weeklyTotalClient, repeatClients, newClients, totalClientList};
+    // If no specific query was found, fetch all clients
+    if (!status) {
+        uniqueUserIds = await Booking.distinct("user", { salon: user?._id });
+    }
+
+    // main query;
+    const allClients = await User.find({ _id: { $in: uniqueUserIds } }).select("_id name profileImage email");
+
+    return allClients;
+}
+
+// weekly clients for salon
+exports.lastBookingFromDB= async(id)=>{
+    
+    const isLastBooking = await Booking.findOne({ user: id }).populate([
+        {
+            path: "user",
+            select: "name profileImage phone email"
+        },
+        {
+            path: "service",
+            select: "serviceName price"
+        }
+    ]).sort({ booking_date: -1 }).limit(1).select("user service booking_date");
+    if(!isLastBooking){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No Booking Found")
+    }
+
+    return isLastBooking;
 }

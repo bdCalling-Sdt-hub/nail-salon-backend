@@ -1,7 +1,8 @@
 const {StatusCodes} = require("http-status-codes");
 const ApiError = require("../../../errors/ApiError");
 const Wishlist = require("./wishlist.model");
-const User = require("../user/user.model")
+const User = require("../user/user.model");
+const mongoose = require("mongoose");
 
 exports.addToWishlistToDB = async (user, payload) => {
     const isExistUser = await User.findById(user?._id);
@@ -33,13 +34,24 @@ exports.addToWishlistToDB = async (user, payload) => {
     return message;
 };
   
-exports.getWishlistFromDB = async (id) => {
-    const result = await Wishlist.find({ user: id }).populate({
-        path: 'salon',
-        populate: {
+exports.getWishlistFromDB = async (user) => {
+    const userId = new mongoose.Types.ObjectId(user._id);
+
+    const result = await Wishlist.find({ user: userId })
+        .populate({
             path: 'salon',
-            model: 'Salon'
-        }
+            select: "_id name profileImage location rating totalRating"
+        })
+        .select("_id salon");
+
+    const salonIds = result.map((item) => item.salon._id.toString());
+
+    // Add featured property to each salon if it matches a salon in the wishlist
+    const salons = result.map((item) => {
+        const salon = item.salon.toObject();
+        const isFeatured = salonIds.includes(salon._id.toString());
+        return { ...salon, featured: isFeatured };
     });
-    return result;
+
+    return salons;
 };

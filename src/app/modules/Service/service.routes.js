@@ -9,5 +9,7 @@ router.post("/", auth(USER_ROLE.SALON), configureFileUpload(), ServiceController
 router.patch("/:id", auth(USER_ROLE.SALON),  configureFileUpload(), ServiceController.updateServiceFromDB)
 router.delete("/delete-service/:id", auth(USER_ROLE.SALON), ServiceController.deleteServiceFromDB)
 router.get("/:category", auth(USER_ROLE.SALON, USER_ROLE.USER), ServiceController.getServiceByCategoryFromDB)
+router.get("/service-list/:category", auth(USER_ROLE.SALON, USER_ROLE.USER), ServiceController.serviceListFromDB)
+router.get("/service-category/:category", auth(USER_ROLE.SALON, USER_ROLE.USER), ServiceController.categoryServiceFromDB)
 
 module.exports = router;
