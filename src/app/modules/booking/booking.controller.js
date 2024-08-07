@@ -2,6 +2,8 @@ const BookingService = require("./booking.service");
 const catchAsync = require("../../../shared/catchAsync");
 const sendResponse = require("../../../shared/sendResponse");
 const { StatusCodes } = require("http-status-codes");
+const ApiError = require("../../../errors/ApiError");
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 exports.createBooking= catchAsync(async(req, res)=>{
@@ -86,12 +88,13 @@ exports.bookingListFromDB= catchAsync(async(req, res)=>{
 exports.bookingCompleteToDB= catchAsync(async(req, res)=>{
     const id = req.params.id;
     const user = req.user;
-    await BookingService.bookingCompleteToDB(id, user);
+    const result = await BookingService.bookingCompleteToDB(id, user);
 
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
-        message: "Booking Completed"
+        message: "Booking Completed",
+        data: result
     })
 });
 
@@ -133,4 +136,34 @@ exports.lastBookingFromDB= catchAsync(async(req, res)=>{
         message: "Last Booking Details",
         data: result
     })
+});
+
+// create payment intent;
+
+//create stripe instance
+// const stripe = new Stripe(process.env.stripe_api_secret);
+
+exports.createPaymentIntent= catchAsync(async(req, res)=>{
+    const { price } = req.body;
+
+    if (typeof price !== "number" || price <= 0) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid price amount");
+    }
+    const amount = Math.trunc(price * 100);
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+        metadata: { integration_check: 'accept_a_payment' }
+    });
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Payment intent created successfully",
+        data: {
+            client_secret: paymentIntent.client_secret,
+            transactionId: paymentIntent.id,
+        },
+    });
 });

@@ -31,7 +31,7 @@ exports.createBooking= async(user, payload)=>{
     return booking;
 }
 
-exports.myBooking= async(user, status, date)=>{
+exports.myBooking= async(user, status)=>{
     const filter  = user.role === "USER" ? {user : user?._id} : {salon : user?._id} 
     let query= {
         ...filter
@@ -50,7 +50,7 @@ exports.myBooking= async(user, status, date)=>{
     const booking = await Booking.find(query).populate([
         {
             path: 'salon',
-            select: "name location phone"
+            select: "name location phone profileImage"
         },
         {
             path: "user",
@@ -188,16 +188,18 @@ exports.bookingListFromDB= async(queries)=>{
 };
 
 exports.bookingCompleteToDB= async(id, user)=>{
-    const booking = await Booking.findById(id);
-    const isExistUser = await Booking.findOne({user: new mongoose.Types.ObjectId(user?._id)})
+    const isExitBooking = await Booking.findById(id);
+    if(!isExitBooking){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No Booking Found");
+    }
 
-    if(!isExistUser){
+    if(isExitBooking?.user.toString() !== user?._id.toString()){
         throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized to this resource");
     }
 
     const result = await Booking.findByIdAndUpdate({_id: id}, {$set: {status: "Complete"}}  , {new: true})
     console.log(result)
-    return;
+    return result;
 }
 
 // weekly summary for salon

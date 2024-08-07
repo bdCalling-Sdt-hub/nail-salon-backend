@@ -15,6 +15,7 @@ router.get("/booking-list", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), Bookin
 router.get("/complete/:id", auth(USER_ROLE.USER), BookingController.bookingCompleteToDB);
 router.get("/:id", auth(USER_ROLE.USER, USER_ROLE.SALON), BookingController.bookingDetails);
 router.get("/last-booking/:id", auth(USER_ROLE.SALON), BookingController.lastBookingFromDB);
+router.post("/create-payment-intent", auth(USER_ROLE.USER), BookingController.createPaymentIntent);
 
 
 module.exports = router;
