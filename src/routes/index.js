@@ -14,7 +14,8 @@ const SalonRoutes =require("../app/modules/salon/salon.routes");
 const ReviewRoutes =require("../app/modules/review/review.routes");
 const AdminRoutes =require("../app/modules/admin/admin.routes");
 const FaqRoutes =require("../app/modules/faq/faq.routes");
-const BankRoutes =require("../app/modules/bank/bank.routes");
+const Notifications =require("../app/modules/notifications/notification.routes");
+const Payment =require("../app/modules/payment/payment.routes");
 const router = express.Router();
 
 const appRouteList = [
@@ -79,8 +80,12 @@ const appRouteList = [
         route: FaqRoutes
     },
     {
-        path: "/bank",
-        route: BankRoutes
+        path: "/notifications",
+        route: Notifications
+    },
+    {
+        path: "/payment",
+        route: Payment
     }
 ]
 

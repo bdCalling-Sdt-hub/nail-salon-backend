@@ -6,9 +6,10 @@ const socketHandler  = (io) => {
 
         socket.on("joinChat", (conversationId) => {
             socket.join(conversationId);
+            console.log("Join Room", conversationId)
         });
       
-          //send and get message
+        /*   //send and get message
         socket.on("sendMessage", async (payload)=> {
             
             const { conversationId, sender, message }= payload;
@@ -22,7 +23,7 @@ const socketHandler  = (io) => {
             const response = await Message.create(messageData);
             io.to(conversationId).emit("getMessage", response);
 
-        });
+        }); */
 
         //disconnect socket
         socket.on("disconnect", () => {

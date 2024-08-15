@@ -50,7 +50,7 @@ exports.serviceListFromDB=async(category, user)=>{
     return services;
 };
 
-exports.categoryServiceFromDB=async(category, user)=>{
-    const services = await Service.find({category: category}).select("_id serviceName price");
+exports.categoryServiceFromDB=async(category, id)=>{
+    const services = await Service.find({category: category, user: new mongoose.Types.ObjectId(id)}).select("serviceName price");
     return services;
 };

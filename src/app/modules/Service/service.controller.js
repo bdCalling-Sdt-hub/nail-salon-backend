@@ -68,7 +68,9 @@ exports.serviceListFromDB=catchAsync(async(req, res)=>{
 
 exports.categoryServiceFromDB=catchAsync(async(req, res)=>{
     const category = req.params.category;
-    const result = await ServicerService.categoryServiceFromDB(category);
+    const {id} = req.query;
+
+    const result = await ServicerService.categoryServiceFromDB(category, id);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,

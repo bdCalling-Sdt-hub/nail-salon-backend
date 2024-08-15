@@ -74,7 +74,7 @@ exports.changePassword = catchAsync(async (req, res) => {
 exports.updateProfile = catchAsync(async (req, res) => {
     const user = req.user;
 
-    let profileImage="";
+    let profileImage;
     if (req.files && "profileImage" in req.files && req.files.profileImage[0]) {
         profileImage = `/images/${req.files.profileImage[0].filename}`;
     }

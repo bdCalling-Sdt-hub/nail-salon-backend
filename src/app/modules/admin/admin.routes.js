@@ -6,9 +6,10 @@ const { USER_ROLE } = require("../../../enums");
 const configureFileUpload = require("../../middlewares/fileHandler");
 
 router.post("/", auth(USER_ROLE.SUPER_ADMIN),  configureFileUpload(), AdminController.makeAdmin);
+router.post("/create-super-admin",  configureFileUpload(), AdminController.createSuperAdmin);
 router.get("/", auth(USER_ROLE.SUPER_ADMIN), AdminController.getAdmin);
 router.delete("/:id", auth(USER_ROLE.SUPER_ADMIN), AdminController.deleteAdmin);
-router.post("/login", configureFileUpload(), AdminController.adminLogin);
+router.post("/login", AdminController.adminLogin);
 router.post("/forgot-password", AdminController.forgotPassword);
 router.post("/verify-otp",configureFileUpload(), AdminController.verifyEmail);
 router.post("/reset-password",configureFileUpload(), AdminController.resetPassword);

@@ -19,14 +19,13 @@ exports.createBooking= async(user, payload)=>{
     const data ={
         text: `${isExistUser?.name} Booking On Your Salons`,
         user: payload?.salon,
+        title: "A New Service has Booked",
+        type: "ADMIN"
     }
 
 
-    await Notification.create(data)
-    io.emit(`get-messages::${payload.salon}`, {
-        text: `${isExistUser?.name} Booking On Your Salons`,
-        user: payload?.salon
-    });
+    const result =  await Notification.create(data)
+    io.emit(`get-notification::${payload.salon}`, result);
 
     return booking;
 }
@@ -176,7 +175,20 @@ exports.bookingListFromDB= async(queries)=>{
     const size = parseInt(limit) || 10;
     const skip = (pages - 1) * size;
 
-    const bookingList = await Booking.find(query).populate(["salon", "user"]).skip(skip).limit(size);
+    const bookingList = await Booking.find(query).populate([
+        {
+            path: "user",
+            select: "name profileImage" 
+        },
+        {
+            path: "salon",
+            select: "name location contact " 
+        },
+        {
+            path: "service",
+            select: "serviceName price" 
+        },
+    ]).skip(skip).limit(size);
     const count = await Booking.estimatedDocumentCount();
     return {
         data: bookingList,
@@ -352,13 +364,13 @@ exports.weeklyClientsFromDB= async(user, status)=>{
 
     // repeated client
     if( status === "repeated"){
-        const multipleBookingsClients = await Booking.aggregate([
+        const result = await Booking.aggregate([
             {
                 $match: {
                     salon: new mongoose.Types.ObjectId(user._id), // Ensure user._id is an ObjectId
                     createdAt: {
-                    $gte: startOfWeek,
-                    $lt: endOfWeek
+                        $gte: startOfWeek,
+                        $lt: endOfWeek
                     }
                 }
             },
@@ -386,7 +398,8 @@ exports.weeklyClientsFromDB= async(user, status)=>{
                 }
             }
         ]);
-        uniqueUserIds = multipleBookingsClients[0].multipleBookingUserIds;
+
+        uniqueUserIds = result[0]?.multipleBookingUserIds;
     }
 
     

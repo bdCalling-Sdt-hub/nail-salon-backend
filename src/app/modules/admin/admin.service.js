@@ -25,6 +25,29 @@ exports.makeAdmin=async(payload)=>{
         othersPayload.password=hashPassword;
     }
 
+    console.log("othersData", othersPayload)
+    const result = await Admin.create(othersPayload);
+    if(!result){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Create Admin");
+    }
+
+    return;
+}
+
+exports.createSuperAdmin=async(payload)=>{
+    const {password, ...othersPayload} = payload;
+
+    const isAdminExist = await Admin.findOne({email: payload?.email});
+    if(isAdminExist){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "This Email Already Taken");
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    if(hashPassword){
+        othersPayload.password=hashPassword;
+    }
+
     const result = await Admin.create(othersPayload);
     if(!result){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Create Admin");
@@ -35,8 +58,7 @@ exports.makeAdmin=async(payload)=>{
 
 exports.adminLogin=async(payload)=>{
     const { email, password } = payload;
-    
-    const admin = await Admin.findOne({ email });
+    const admin = await Admin.findOne({ email: email });
     if (!admin) {
         throw new ApiError(StatusCodes.NOT_FOUND, "Admin not Found");
     }
@@ -165,7 +187,8 @@ exports.updateProfile = async (admin, payload) => {
 
     if(profileImage && isExistAdmin?.profileImage.startsWith("https")){
         othersData.profileImage = profileImage;
-    }else{
+    }
+    if(profileImage){
         othersData.profileImage = profileImage;
         unlinkFile(isExistAdmin.profileImage) 
     }

@@ -17,13 +17,12 @@ exports.getUserList=async(queries)=>{
         query.location = regex;
     }
 
-    const users = await User.find(query).skip(skip).limit(size);
-    const count = await User.countDocuments({role: "USER"});
+    const users = await User.find(query).skip(skip).limit(size).select("name email profileImage location phone");
     return {
         users: users,
         meta: {
             page: pages,
-            total: count
+            total: users?.length
         }
     }
 }

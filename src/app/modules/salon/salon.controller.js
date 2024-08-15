@@ -10,7 +10,7 @@ exports.updateSalon=catchAsync(async(req, res)=>{
         gallery = req.files.gallery.map(file => `/images/${file.filename}`);
     }
 
-    let profileImage="";
+    let profileImage;
     if (req.files && "profileImage" in req.files && req.files.profileImage[0]) {
         profileImage = `/images/${req.files.profileImage[0].filename}`;
     }
@@ -77,6 +77,17 @@ exports.salonsFromDB=catchAsync(async(req, res)=>{
         statusCode: httpStatus.OK,
         success: true,
         message: "Salon List Retrieved Successfully",
+        data: salon
+    });
+});
+
+exports.salonServiceFromDB=catchAsync(async(req, res)=>{
+    const id = req.params.id;
+    const salon = await SalonService.salonServiceFromDB( id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Servie List Retrieved Successfully",
         data: salon
     });
 });

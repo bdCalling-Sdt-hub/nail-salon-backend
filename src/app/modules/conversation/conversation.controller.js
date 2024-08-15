@@ -4,8 +4,9 @@ const sendResponse = require("../../../shared/sendResponse");
 const { StatusCodes } = require("http-status-codes");
 
 exports.createConversation=catchAsync(async(req, res)=>{
-
-    const {participants} = req.body;
+    const user = req.user;
+    const otherUser = req.params.id
+    const participants = [user?._id, otherUser];
     const conversation = await ConversationService.createConversation(participants);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -16,8 +17,9 @@ exports.createConversation=catchAsync(async(req, res)=>{
 })
 
 exports.getConversation=catchAsync(async(req, res)=>{
-    const user = req.user
-    const salons = await ConversationService.getConversation(user)
+    const user = req.user;
+    const query = req.query;
+    const salons = await ConversationService.getConversation(user, query)
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,

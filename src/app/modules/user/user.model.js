@@ -41,10 +41,20 @@ const userSchema = new Schema(
             enum: ["active", "inactive"],
             default: "active"
         },
-        bank: {
-            type: Schema.Types.ObjectId,
-            ref: "Bank",
-            default: null
+        accountInformation: {
+            status: {
+              type: Boolean,
+              default: false,
+            },
+            stripeAccountId: {
+              type: String,
+            },
+            externalAccountId: {
+              type: String,
+            },
+            currency: {
+              type: String,
+            }
         },
         openingTimes: {
             type: String,
@@ -61,7 +71,17 @@ const userSchema = new Schema(
             default: "",
             required: false
         },
+        contact: {
+            type: String,
+            default: "",
+            required: false
+        },
         featured: {
+            type: Boolean,
+            default: false,
+            required: false
+        },
+        wish: {
             type: Boolean,
             default: false,
             required: false

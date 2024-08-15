@@ -16,7 +16,9 @@ exports.sendMessage=catchAsync(async(req, res)=>{
 
 exports.getMessage= catchAsync(async(req, res)=>{
     const id = req.params.id;
-    const messages = await MessageController.getMessage(id);
+    const query = req.query;
+    const user = req.user;
+    const messages = await MessageController.getMessage(id, query, user);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,

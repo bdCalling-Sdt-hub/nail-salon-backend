@@ -146,10 +146,10 @@ exports.lastBookingFromDB= catchAsync(async(req, res)=>{
 exports.createPaymentIntent= catchAsync(async(req, res)=>{
     const { price } = req.body;
 
-    if (typeof price !== "number" || price <= 0) {
+    if ( parseInt(price) <= 0) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid price amount");
     }
-    const amount = Math.trunc(price * 100);
+    const amount = Math.trunc(parseInt(price) * 100);
     const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",

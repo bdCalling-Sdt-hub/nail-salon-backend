@@ -18,6 +18,19 @@ exports.makeAdmin=catchAsync(async(req, res)=>{
     })
 });
 
+exports.createSuperAdmin=catchAsync(async(req, res)=>{
+    const payload = {
+        ...req.body,
+        verified: true
+    }
+    await AdminService.createSuperAdmin(payload);
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        status: true,
+        message: "Admin Created Successfully"
+    })
+});
+
 exports.adminLogin=catchAsync(async(req, res)=>{
     const token = await AdminService.adminLogin(req.body);
     sendResponse(res, {

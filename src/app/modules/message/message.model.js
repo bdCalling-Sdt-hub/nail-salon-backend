@@ -15,6 +15,9 @@ const messageSchema= new Schema(
             ref: "Conversation",
             required: true,
         }
+    },
+    {
+        timestamps: true
     }
 )
 const Message = model('Message', messageSchema);

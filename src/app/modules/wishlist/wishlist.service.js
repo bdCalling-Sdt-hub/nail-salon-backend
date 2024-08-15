@@ -50,7 +50,7 @@ exports.getWishlistFromDB = async (user) => {
     const salons = result.map((item) => {
         const salon = item.salon.toObject();
         const isFeatured = salonIds.includes(salon._id.toString());
-        return { ...salon, featured: isFeatured };
+        return { ...salon, wish: isFeatured };
     });
 
     return salons;

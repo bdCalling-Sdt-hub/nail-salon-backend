@@ -1,17 +1,15 @@
 const express=require('express')
-// const { USER_TYPE } =require('../../../enums/user')
-// const auth =require('../../middlewares/auth')
+const auth = require("../../middlewares/auth");
+const { USER_ROLE } = require("../../../enums");
 const RuleController  =require('./rule.controller');
 const configureFileUpload = require('../../middlewares/fileHandler');
 const router = express.Router()
 
 //privacy policy
 router.route('/privacy-policy')
-    .post(
-        RuleController.createPrivacyPolicy 
+    .post( auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), RuleController.createPrivacyPolicy 
     )
-    .patch(
-        RuleController.updatePrivacyPolicy
+    .patch( auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), RuleController.updatePrivacyPolicy
     )
     .get(
         RuleController.getPrivacyPolicy
@@ -19,11 +17,9 @@ router.route('/privacy-policy')
 
 //terms and conditions
 router.route('/terms-and-conditions')
-    .post(
-        RuleController.createTermsAndCondition,
+    .post( auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), RuleController.createTermsAndCondition,
     )
-    .patch(
-        RuleController.updateTermsAndCondition,
+    .patch(auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), RuleController.updateTermsAndCondition,
     )
     .get(
         RuleController.getTermsAndCondition,
@@ -31,11 +27,9 @@ router.route('/terms-and-conditions')
 
 //privacy policy
 router.route('/about')
-    .post(
-        RuleController.createAbout,
+    .post( auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), RuleController.createAbout,
     )
-    .patch(
-        RuleController.updateAbout,
+    .patch(auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN), RuleController.updateAbout,
     )
     .get(
         RuleController.getAbout,

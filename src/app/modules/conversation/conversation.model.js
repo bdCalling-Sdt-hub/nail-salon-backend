@@ -8,6 +8,9 @@ const conversationSchema = new Schema(
                 ref: "User"
             }
         ]
+    },
+    {
+        timestamps: true
     }
 )
 const Conversation = model("Conversation", conversationSchema);

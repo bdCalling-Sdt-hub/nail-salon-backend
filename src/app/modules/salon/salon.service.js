@@ -36,12 +36,30 @@ exports.updateSalon=async(user, payload)=>{
 }
 
 exports.getFeaturedSalon=async()=>{
+
+
     const salons = await User.find({featured: true}).select("_id profileImage featured rating totalRating location name");
-    if(!salons){
-        throw new ApiError(StatusCodes.NOT_FOUND, "No Salon Found");
-    }
-    
-    return salons;
+
+    // all wishlist
+    const userId = new mongoose.Types.ObjectId(salons._id);
+
+    const wishList = await Wishlist.find({ user: userId })
+        .populate({
+            path: 'salon',
+            select: "_id name profileImage location rating totalRating"
+        })
+        .select("_id salon");
+    console.log(wishList);
+    const salonIds = wishList.map((item) => item?.salon?._id?.toString());
+
+    // Add featured property to each salon if it matches a salon in the wishlist
+    const result = salons.map((item) => {
+        const salon = item.toObject();
+        const isFeatured = salonIds.includes(salon._id.toString());
+        return { ...salon, wish: isFeatured };
+    });
+
+    return result;
 }
 
 exports.makeFeaturedSalon=async(id)=>{
@@ -52,6 +70,11 @@ exports.makeFeaturedSalon=async(id)=>{
     const result = await User.findByIdAndUpdate({_id: id}, {$set: {featured: !salon.featured}}, {new: true})
 
     return result
+}
+
+exports.salonServiceFromDB=async(id)=>{
+    const services = await Service.find({user: id}).select("serviceName price");
+    return services;
 }
 
 exports.salonListFromDB=async(queries)=>{
@@ -66,32 +89,17 @@ exports.salonListFromDB=async(queries)=>{
         let regex = new RegExp(location, 'i');
         query.location = regex;
     }
+    if(featured){
+        query.featured = featured;
+    }
 
     const pages = parseInt(page) || 1;
     const size = parseInt(limit) || 10;
     const skip = (pages - 1) * size;
 
-    const salonList = await User.aggregate([
-        { $match: query },
-        {
-          $lookup: {
-                from: "salons",
-                localField: "salon",
-                foreignField: "_id",
-                as: "salon"
-            }
-        },
-        {
-            $unwind: "$salon"
-        },
-        {
-            $match: featured === "true" ? { "salon.featured": true } : {}
-        },
-        { $skip: skip },
-        { $limit: size }
-    ]);
+    const salonList = await User.find(query).limit(size).skip(skip).select("name email featured profileImage location contact rating totalRating description")
 
-    const count = await User.countDocuments({role: "SALON"});
+    const count = salonList?.length || 0;
 
     return {
         data: salonList,
@@ -181,7 +189,7 @@ exports.salonsFromDB = async (queries, user) => {
     const salons = result.map((item) => {
         const salon = item.toObject();
         const isFeatured = salonIds.includes(salon._id.toString());
-        return { ...salon, featured: isFeatured };
+        return { ...salon, wish: isFeatured };
     });
 
     return salons;

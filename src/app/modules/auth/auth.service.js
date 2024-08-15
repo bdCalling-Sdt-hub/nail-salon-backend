@@ -184,7 +184,9 @@ exports.updateProfile = async (user, payload) => {
     
     if(profileImage && isExistUser?.profileImage?.startsWith("https")){
         othersData.profileImage = profileImage;
-    }else{
+    }
+    
+    if(profileImage){
         othersData.profileImage = profileImage;
         unlinkFile(isExistUser.profileImage)
     }
@@ -205,7 +207,7 @@ exports.updateProfile = async (user, payload) => {
 
 exports.getProfileFromDB = async (user) => {
 
-    const isExistUser = await User.findById(user._id).populate("bank");
+    const isExistUser = await User.findById(user._id);
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exits");
     }

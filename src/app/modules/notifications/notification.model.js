@@ -5,6 +5,10 @@ const notificationSchema= new Schema(
             type: String, 
             required: true
         },
+        title: {
+            type: String,
+            default: ""
+        },
         read: { 
             type: Boolean, 
             default: false,
