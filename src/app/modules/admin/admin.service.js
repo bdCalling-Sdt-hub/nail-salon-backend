@@ -25,7 +25,7 @@ exports.makeAdmin=async(payload)=>{
         othersPayload.password=hashPassword;
     }
 
-    console.log("othersData", othersPayload)
+
     const result = await Admin.create(othersPayload);
     if(!result){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Create Admin");

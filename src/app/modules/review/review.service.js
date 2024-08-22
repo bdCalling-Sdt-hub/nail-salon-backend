@@ -11,15 +11,28 @@ exports.createReview=async(payload)=>{
     }
 
     if (payload.rating) {
-        // Increase the total count of ratings
-        isSalonExist.totalRating = isSalonExist.totalRating + 1;
-        
-    
-        // Add the new rating to the sum of all ratings
-        isSalonExist.rating = Number(isSalonExist.rating) + Number(payload.rating);
 
-        // Calculate the new average rating
-        isSalonExist.rating = isSalonExist.rating / isSalonExist.totalRating;
+        // checking the rating is valid or not;
+        const rating = Number(payload.rating);
+        if (rating < 1 || rating > 5) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid rating value");
+        }
+        
+
+        // Update artist's rating and total ratings count
+        const totalRating = isSalonExist.totalRating + 1;
+
+        let newRating;
+        if (isSalonExist.rating === null || isSalonExist.rating === 0) {
+            // If no previous ratings, the new rating is the first one
+            newRating = rating;
+        } else {
+            // Calculate the new rating based on previous ratings
+            newRating = ((isSalonExist.rating * isSalonExist.totalRating) + rating) / totalRating;
+        }
+    
+        isSalonExist.totalRating = totalRating;
+        isSalonExist.rating = Number(newRating).toFixed(2);
     
         // Save the updated salon document
         await isSalonExist.save();

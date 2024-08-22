@@ -162,12 +162,11 @@ exports.changePassword = async (id, payload) => {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(newPass, salt);
 
-    const result= await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
         {_id: id}, 
         { password: hashPassword },
         {new: true}
     );
-    console.log(result)
     return;
 };
 
@@ -228,7 +227,5 @@ exports.deleteProfileFromDB = async (id, password) => {
     }
 
     await User.findByIdAndDelete({_id: id})
-
-    console.log(isMatch)
     return;
 };

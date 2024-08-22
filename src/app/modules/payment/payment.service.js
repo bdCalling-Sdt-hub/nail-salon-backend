@@ -4,10 +4,10 @@ const mongoose = require("mongoose");
 const { StatusCodes } = require("http-status-codes");
 const Notification = require("../notifications/notification.model");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const fs = require("fs");
 
 //create connected account
-exports.createConnectedAccount = async (bodyData, files) => {
-    const user = req.user;
+exports.createConnectedAccount = async (user, bodyData, files) => {
 
     //user check
     const isExistUser = await User.isExistUser(user._id);
@@ -24,12 +24,12 @@ exports.createConnectedAccount = async (bodyData, files) => {
     const { dateOfBirth, phoneNumber, address, bank_info, business_profile } = bodyData;
     const dob = new Date(dateOfBirth);
   
-    if (!dateOfBirth && !phoneNumber && !address && !bank_info && !business_profile, KYC) {
+    if (!dateOfBirth && !phoneNumber && !address && !bank_info && !business_profile) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "Please provide the required information: date of birth, phone number, address, bank information, and business profile.");
     }
   
     //process of kyc
-    if (!files && files.length < 2) {
+    if (!files && files?.length < 2) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "Two kyc files are required!");
     }
   

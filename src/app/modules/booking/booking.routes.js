@@ -13,9 +13,11 @@ router.get("/weekly-client", auth(USER_ROLE.SALON), BookingController.weeklyClie
 router.get("/booking-summary", auth(USER_ROLE.SALON), BookingController.bookingSummary);
 router.get("/booking-list", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), BookingController.bookingListFromDB);
 router.get("/complete/:id", auth(USER_ROLE.USER), BookingController.bookingCompleteToDB);
-router.get("/:id", auth(USER_ROLE.USER, USER_ROLE.SALON), BookingController.bookingDetails);
 router.get("/last-booking/:id", auth(USER_ROLE.SALON), BookingController.lastBookingFromDB);
 router.post("/create-payment-intent", auth(USER_ROLE.USER), BookingController.createPaymentIntent);
-
+router.get("/my-balance", auth(USER_ROLE.SALON), BookingController.myBalance);
+router.patch("/reschedule/:id", auth(USER_ROLE.USER), configureFileUpload(), BookingController.reschedule);
+router.post("/check-booking/:id", auth(USER_ROLE.USER), BookingController.checkBooking);
+router.get("/:id", auth(USER_ROLE.USER, USER_ROLE.SALON), BookingController.bookingDetails);
 
 module.exports = router;

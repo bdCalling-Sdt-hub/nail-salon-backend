@@ -138,11 +138,8 @@ exports.lastBookingFromDB= catchAsync(async(req, res)=>{
     })
 });
 
-// create payment intent;
 
 //create stripe instance
-// const stripe = new Stripe(process.env.stripe_api_secret);
-
 exports.createPaymentIntent= catchAsync(async(req, res)=>{
     const { price } = req.body;
 
@@ -152,7 +149,7 @@ exports.createPaymentIntent= catchAsync(async(req, res)=>{
     const amount = Math.trunc(parseInt(price) * 100);
     const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
-        currency: "usd",
+        currency: "gbp",
         payment_method_types: ["card"],
         metadata: { integration_check: 'accept_a_payment' }
     });
@@ -165,5 +162,46 @@ exports.createPaymentIntent= catchAsync(async(req, res)=>{
             client_secret: paymentIntent.client_secret,
             transactionId: paymentIntent.id,
         },
+    });
+});
+
+//my balance
+exports.myBalance= catchAsync(async(req, res)=>{
+    const user = req.user;
+    const result = await BookingService.myBalance(user);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "My Booking balance retrieved successfully",
+        data: result
+    });
+});
+
+//reschedule
+exports.reschedule= catchAsync(async(req, res)=>{
+    const id = req.params.id;
+    const payload = req.body;
+    const result = await BookingService.reschedule(payload, id);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Rescheduled Booking successfully",
+        data: result
+    });
+});
+
+//reschedule
+exports.checkBooking= catchAsync(async(req, res)=>{
+    const payload = req.body;
+    const id = req.params.id;
+    const result = await BookingService.checkBooking(payload, id);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Checked Booking",
+        data: result
     });
 });

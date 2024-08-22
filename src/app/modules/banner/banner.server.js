@@ -30,7 +30,6 @@ exports.deleteBannerToDB = async (id) => {
 
   //delete from folder
   const isBannerExist = await Banner.findById({_id: id});
-  console.log("image", isBannerExist?.bannerImage)
   unlinkFile(isBannerExist?.bannerImage);
 
   //delete from database

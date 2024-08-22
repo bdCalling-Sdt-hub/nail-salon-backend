@@ -80,10 +80,12 @@ exports.bookingDetails= async(id)=>{
             select: "name profileImage"
         },
         {
-            path: "service",
-            select: "serviceName price"
+            path: 'service',
+            select: 'serviceName price',
+            model: 'Service'
         }
-    ]).select("_id user salon price bookingId booking_date transactionId booking_time");;
+    ])
+    .select("_id user service salon price bookingId booking_date transactionId booking_time");
     return booking;
 }
 
@@ -109,13 +111,18 @@ exports.weeklyBooking= async(user)=>{
         { name: "Fri", income: 0 },
     ];
 
-    // here calculating per day income
     weeklyBooking.forEach(booking => {
         const bookingDate = new Date(booking.booking_date);
         const bookingDay = bookingDate.getDay();
-        const incomeIndex = bookingDay === 0 ? 6 : bookingDay - 1;
-        weeklyIncome[incomeIndex].income += parseInt(booking?.price);
-    });
+        
+        // Correct mapping of days to indices in your weeklyIncome array
+        const incomeIndex = bookingDay === 0 ? 1 : bookingDay; // Adjust Sunday to map correctly
+    
+        // Ensure that the index exists before trying to access income
+        if (weeklyIncome[incomeIndex]) {
+            weeklyIncome[incomeIndex].income += parseInt(booking?.price || 0);
+        }
+    });    
 
     return weeklyIncome;
 }
@@ -129,7 +136,12 @@ exports.bookingSummary= async(user)=>{
     // my balance
     const totalIncome = await Booking.aggregate([
         { $match: { salon: new mongoose.Types.ObjectId(user._id) } },
-        { $group: { _id: null, totalIncomes: { $sum: "$price" } } },
+        { 
+            $group: { 
+                _id: null, 
+                totalIncomes: { $sum: { $toDouble: "$price" } } 
+            } 
+        },
     ]);
     const myBalance = totalIncome[0]?.totalIncomes; 
 
@@ -210,7 +222,6 @@ exports.bookingCompleteToDB= async(id, user)=>{
     }
 
     const result = await Booking.findByIdAndUpdate({_id: id}, {$set: {status: "Complete"}}  , {new: true})
-    console.log(result)
     return result;
 }
 
@@ -417,7 +428,7 @@ exports.weeklyClientsFromDB= async(user, status)=>{
 // weekly clients for salon
 exports.lastBookingFromDB= async(id)=>{
     
-    const isLastBooking = await Booking.findOne({ user: id }).populate([
+    const isLastBooking = await Booking.findOne({ user: new mongoose.Types.ObjectId(id) }).populate([
         {
             path: "user",
             select: "name profileImage phone email"
@@ -425,11 +436,64 @@ exports.lastBookingFromDB= async(id)=>{
         {
             path: "service",
             select: "serviceName price"
-        }
-    ]).sort({ booking_date: -1 }).limit(1).select("user service booking_date");
+        },
+
+    ]).sort({ createdAt: -1 }).limit(1).select("user price service booking_date");
+
     if(!isLastBooking){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Booking Found")
     }
 
     return isLastBooking;
+}
+
+
+// My Balance for Salon
+exports.myBalance= async(user)=>{
+    const balances = await Booking.find({salon: user?._id}).populate({path: "user", select: "name profileImage email"}).select("price");
+    return balances;
+}
+
+
+// reschedule booking;
+exports.reschedule= async(payload, id)=>{
+
+    const isExistBooking = await Booking.findById(id).populate("user");
+    if(!isExistBooking){
+        throw new ApiError(StatusCodes.NOT_FOUND, "There is No booking Found");
+    }
+
+    const payloadData= {
+        ...payload,
+        price: parseInt(isExistBooking.price) + 5,
+        fine: 5
+    }
+
+    const data ={
+        title: "Rescheduled Booking",
+        text: `${isExistBooking?.user?.name} Reschedule Booking`,
+        user: isExistBooking?.salon,
+        type: "ADMIN"
+    }
+
+
+    const notification =  await Notification.create(data)
+    io.emit(`get-notification::${isExistBooking.salon}`, notification);
+
+
+    const result = await Booking.findByIdAndUpdate({_id: id}, payloadData, {new : true})
+    return result;
+}
+
+// check booking;
+exports.checkBooking= async(payload, id)=>{
+
+    const { booking_date, booking_time} = payload;
+
+    const isExitsDate = await Booking.findOne({ salon: new mongoose.Types.ObjectId(id), booking_date: booking_date, booking_time: booking_time });
+    if(isExitsDate){
+        throw new ApiError(StatusCodes.NOT_FOUND, "This is Date And Time already Booked");
+    }
+
+    return;
 }

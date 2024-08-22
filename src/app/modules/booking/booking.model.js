@@ -1,4 +1,5 @@
-const {model, Schema} = require("mongoose");
+const {model, Schema } = require("mongoose");
+const mongoose = require("mongoose")
 
 const bookingSchema = new Schema(
     {
@@ -16,6 +17,10 @@ const bookingSchema = new Schema(
             type: String,
             required: true,
         },
+        fine: {
+            type: String,
+            default: 0
+        },
         payoutPrice: {
             type: Number,
             required: false,
@@ -23,10 +28,10 @@ const bookingSchema = new Schema(
         },
         service: [
             {
-                type: Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 ref: 'Service',
                 required: true
-            }
+            },
         ],
         bookingId: {
             type: String,

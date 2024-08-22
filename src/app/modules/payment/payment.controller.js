@@ -4,11 +4,14 @@ const sendResponse = require("../../../shared/sendResponse");
 const { StatusCodes } = require("http-status-codes");
 
 exports.createConnectedAccount= catchAsync(async(req, res)=>{
+    
+    const user = req.user;
+
     //parse body data
     const bodyData = JSON.parse(req.body.data);
     const files = req.files.KYC;
 
-    const result = await PaymentService.createConnectedAccount(bodyData, files);
+    const result = await PaymentService.createConnectedAccount(user, bodyData, files);
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,

@@ -35,13 +35,13 @@ exports.updateSalon=async(user, payload)=>{
     return salon;
 }
 
-exports.getFeaturedSalon=async()=>{
+exports.getFeaturedSalon=async(user)=>{
 
 
     const salons = await User.find({featured: true}).select("_id profileImage featured rating totalRating location name");
 
     // all wishlist
-    const userId = new mongoose.Types.ObjectId(salons._id);
+    const userId = new mongoose.Types.ObjectId(user._id);
 
     const wishList = await Wishlist.find({ user: userId })
         .populate({
@@ -49,8 +49,8 @@ exports.getFeaturedSalon=async()=>{
             select: "_id name profileImage location rating totalRating"
         })
         .select("_id salon");
-    console.log(wishList);
-    const salonIds = wishList.map((item) => item?.salon?._id?.toString());
+
+    const salonIds = wishList.map((item) => item.salon._id.toString());
 
     // Add featured property to each salon if it matches a salon in the wishlist
     const result = salons.map((item) => {
