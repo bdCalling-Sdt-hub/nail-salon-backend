@@ -173,7 +173,7 @@ exports.changePassword = async (id, payload) => {
 exports.updateProfile = async (user, payload) => {
     const {email} = payload;
     
-    const {profileImage, ...othersData} = payload;
+    const {profileImage, gallery, ...othersData} = payload;
     
     const isExistUser = await User.findById(user._id);
     if (!isExistUser) {
@@ -188,6 +188,10 @@ exports.updateProfile = async (user, payload) => {
     if(profileImage){
         othersData.profileImage = profileImage;
         unlinkFile(isExistUser.profileImage)
+    }
+
+    if(gallery){
+        othersData.gallery = [...isExistUser.gallery, ...gallery]
     }
 
     const isExistEmail = await User.findOne({email});
