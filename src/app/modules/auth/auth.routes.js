@@ -14,4 +14,5 @@ router.post("/change-password",  auth(USER_ROLE.SALON, USER_ROLE.USER), configur
 router.patch("/update-profile", auth(USER_ROLE.ADMIN, USER_ROLE.SALON, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN), configureFileUpload(), AuthController.updateProfile);
 router.get("/get-profile", auth(USER_ROLE.ADMIN, USER_ROLE.SALON, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN), AuthController.getProfileFromDB);
 router.delete("/delete-profile", auth(USER_ROLE.USER, USER_ROLE.SALON), configureFileUpload(), AuthController.deleteProfileFromDB);
+router.patch("/update-gallery", auth(USER_ROLE.SALON), configureFileUpload(), AuthController.updateGalleryToDB);
 module.exports = router;

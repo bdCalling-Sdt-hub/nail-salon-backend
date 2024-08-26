@@ -44,7 +44,7 @@ const configureFileUpload = () => {
     fileFilter: fileFilter,
   }).fields([
     { name: "image", maxCount: 1 },
-    { name: "gallery", maxCount: 3 },
+    { name: "gallery", maxCount: 10 },
     { name: "profileImage", maxCount: 1 },
     { name: "bannerImage", maxCount: 1 },
     { name: "media", maxCount: 1 },

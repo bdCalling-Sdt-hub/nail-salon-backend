@@ -94,7 +94,12 @@ const userSchema = new Schema(
             type: Number,
             default: 0
         },
-        gallery: [],
+        gallery: [
+            {
+                type: String,
+                require: true
+            }
+        ],
         role: {
             type: String,
             enum: ["SUPER_ADMIN", "ADMIN", "USER", "SALON"],

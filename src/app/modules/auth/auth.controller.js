@@ -74,6 +74,11 @@ exports.changePassword = catchAsync(async (req, res) => {
 exports.updateProfile = catchAsync(async (req, res) => {
     const user = req.user;
 
+    let gallery;
+    if (req.files && "gallery" in req.files && req.files.gallery) {
+        gallery = req.files.gallery.map(file => `/images/${file.filename}`);
+    }
+
     let profileImage;
     if (req.files && "profileImage" in req.files && req.files.profileImage[0]) {
         profileImage = `/images/${req.files.profileImage[0].filename}`;
@@ -81,6 +86,7 @@ exports.updateProfile = catchAsync(async (req, res) => {
 
     const data = {
         ...req.body,
+        gallery,
         profileImage
     };
 
@@ -94,8 +100,18 @@ exports.updateProfile = catchAsync(async (req, res) => {
     });
 });
 
-exports.getProfileFromDB = catchAsync(async (req, res) => {
+exports.updateGalleryToDB = catchAsync(async (req, res) => {
+    const user = req.user;
+    const payload = req.body;
+    await AuthService.updateGalleryToDB(user, payload)
+    return sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Updated Gallery Photo"
+    });
+});
 
+exports.getProfileFromDB = catchAsync(async (req, res) => {
     const user = await AuthService.getProfileFromDB(req.user)
     return sendResponse(res, {
         statusCode: httpStatus.OK,

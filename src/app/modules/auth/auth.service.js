@@ -203,6 +203,26 @@ exports.updateProfile = async (user, payload) => {
     return result
 };
 
+exports.updateGalleryToDB = async (user, payload) => {
+    const { image } = payload;
+    
+    const isExistUser = await User.findById(user._id);
+    if (!isExistUser) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+    }
+    
+    if(image){
+        unlinkFile(image)
+    }
+
+    await User.updateOne(
+        { _id: user._id },
+        { $pull: { gallery: image } },
+        { new: true }
+    )
+    return;
+};
+
 
 exports.getProfileFromDB = async (user) => {
 
