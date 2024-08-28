@@ -54,7 +54,24 @@ exports.createUserToDB = async(payload)=>{
 }
 
 exports.login = async(payload)=>{
-    const { email, password } = payload;
+    const { email, password, type, appId, role } = payload;
+
+    if (type === "social") {
+        let user = await User.findOne({ appId });
+    
+        if (!user) {
+          user = await User.create({ appId, role });
+        }
+    
+        const token = createToken( { _id: user._id, role: user.role }, config.jwt.secret, config.jwt.expire_in)
+    
+        return {
+            token,
+            role: user?.role,
+            type : "social"
+        };
+    }
+
     
     const user = await User.findOne({ email });
     if (!user) {
@@ -73,7 +90,8 @@ exports.login = async(payload)=>{
 
     return {
         token,
-        role: user?.role
+        role: user?.role,
+        type : null
     };
 }
 
@@ -239,11 +257,18 @@ exports.getProfileFromDB = async (user) => {
 };
 
 exports.deleteProfileFromDB = async (id, password) => {
+
     
     const isExistUser = await User.findById(id);
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exits");
     }
+    
+    if(isExistUser?.appId){
+        await User.findByIdAndDelete({_id: id})
+        return;
+    }
+    
 
     const isMatch = await bcrypt.compare(password, isExistUser.password);
     if (!isMatch) {
