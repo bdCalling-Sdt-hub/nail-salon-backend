@@ -5,6 +5,7 @@ const { StatusCodes } = require("http-status-codes");
 const Notification = require("../notifications/notification.model");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const fs = require("fs");
+const ApiError = require("../../../errors/ApiError");
 
 //create connected account
 exports.createConnectedAccount = async (user, bodyData, files) => {
