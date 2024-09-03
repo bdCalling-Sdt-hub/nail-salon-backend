@@ -113,6 +113,7 @@ exports.createConnectedAccount = async (user, bodyData, files) => {
         isExistUser.accountInformation.externalAccountId =
             account.external_accounts?.data[0].id;
         isExistUser.accountInformation.status = true;
+        isExistUser.bank_account = bank_info.account_number;
         await isExistUser.save();
     }
   
@@ -159,14 +160,14 @@ exports.transferAndPayouts = async (id) => {
   
     const transfer = await stripe.transfers.create({
         amount: amount * 100,
-        currency: "eur",
+        currency: "gbp",
         destination: stripeAccountId,
     });
   
     const payouts = await stripe.payouts.create(
         {
             amount: amount * 100,
-            currency: "eur",
+            currency: "gbp",
             destination: externalAccountId,
         },
         {

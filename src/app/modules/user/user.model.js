@@ -67,6 +67,11 @@ const userSchema = new Schema(
             default: "",
             required: false
         },
+        bank_account: {
+            type: String,
+            default: "",
+            required: false
+        },
         openingDays: {
             type: String,
             default: "",
