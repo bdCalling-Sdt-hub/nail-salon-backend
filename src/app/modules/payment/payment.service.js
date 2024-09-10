@@ -62,8 +62,8 @@ exports.createConnectedAccount = async (user, bodyData, files) => {
                 month: dob.getMonth() + 1,
                 year: dob.getFullYear(),
             },
-            first_name: isExistUser?.firstName,
-            last_name: isExistUser?.lastName,
+            first_name: isExistUser?.name?.split(" ")[0],
+            last_name: isExistUser?.name?.split(" ")[1],
             email: isExistUser?.email,
             phone: phoneNumber,
             address: {
@@ -74,8 +74,8 @@ exports.createConnectedAccount = async (user, bodyData, files) => {
             },
             verification: {
                 document: {
-                front: frontFilePart.id,
-                back: backFilePart.id,
+                    front: frontFilePart.id,
+                    back: backFilePart.id,
                 },
             },
             },
@@ -140,10 +140,12 @@ exports.transferAndPayouts = async (id) => {
     }
 
     //check bank account
-    const isExistUser = await User.isAccountCreated(new mongoose.Types.ObjectId(isExistBooking?.salon))
-    if (!isExistUser) {
+    const isExistAccount = await User.isAccountCreated(new mongoose.Types.ObjectId(isExistBooking?.salon))
+    if (!isExistAccount) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Sorry, Salon didn't provide bank information. Please tell the salon owner to create a bank account");
     }
+
+    const isExistArtist = await User.findById(new mongoose.Types.ObjectId(isExistBooking?.salon))
   
     //check completed payment and artist transfer
     if (isExistBooking.status === "Complete") {
@@ -152,7 +154,7 @@ exports.transferAndPayouts = async (id) => {
 
 
   
-    const { stripeAccountId, externalAccountId } = isExistUser.accountInformation;
+    const { stripeAccountId, externalAccountId } = isExistArtist?.accountInformation;
     const { price } = isExistBooking;
   
     const charge = (parseInt(price) * 10) / 100;
@@ -176,18 +178,18 @@ exports.transferAndPayouts = async (id) => {
     );
   
     if (transfer.id && payouts.id) {
-        isExistBooking.status = "Completed";
+        isExistBooking.status = "Complete";
         isExistBooking.payoutPrice = payouts.amount / 100;
         await isExistBooking.save();
   
         const data ={
             title: "Payment Received",
             text: `Your Have Received Payment for service successfully`,
-            user: isExistUser?._id,
+            user: isExistArtist?._id,
         }
 
         const result =  await Notification.create(data)
-        io.emit(`get-notification::${isExistUser?._id}`, result);
+        io.emit(`get-notification::${isExistArtist?._id}`, result);
     }
 
     return {

@@ -16,77 +16,28 @@ const AdminRoutes =require("../app/modules/admin/admin.routes");
 const FaqRoutes =require("../app/modules/faq/faq.routes");
 const Notifications =require("../app/modules/notifications/notification.routes");
 const Payment =require("../app/modules/payment/payment.routes");
+const Contact =require("../app/modules/contact/contact.routes");
 const router = express.Router();
 
 const appRouteList = [
-    {
-        path: "/user",
-        route: UserRoutes
-    },
-    {
-        path: "/auth",
-        route: AuthRoutes
-    },
-    {
-        path: "/banner",
-        route: BannerRoutes
-    },
-    {
-        path: "/category",
-        route: CategoryRoutes
-    },
-    {
-        path: "/rule",
-        route: RuleRoutes
-    },
-    {
-        path: "/booking",
-        route: BookingRoutes
-    },
-    {
-        path: "/wishlist",
-        route: WishlistRoutes
-    },
-    {
-        path: "/conversation",
-        route: ConversationRoutes
-    },
-    {
-        path: "/message",
-        route: MessageRoutes
-    },
-    {
-        path: "/service",
-        route: ServiceRoutes
-    },
-    {
-        path: "/product",
-        route: ProductRoutes
-    },
-    {
-        path: "/salon",
-        route: SalonRoutes
-    },
-    {
-        path: "/review",
-        route: ReviewRoutes
-    },
-    {
-        path: "/admin",
-        route: AdminRoutes
-    },
-    {
-        path: "/faq",
-        route: FaqRoutes
-    },
-    {
-        path: "/notifications",
-        route: Notifications
-    },
-    {
-        path: "/payment",
-        route: Payment
-    }
+    {path: "/user",route: UserRoutes},
+    { path: "/auth", route: AuthRoutes },
+    {path: "/banner", route: BannerRoutes},
+    {path: "/category",route: CategoryRoutes},
+    {path: "/rule",route: RuleRoutes},
+    {path: "/booking",route: BookingRoutes},
+    {path: "/wishlist",route: WishlistRoutes},
+    {path: "/conversation",route: ConversationRoutes},
+    {path: "/message",route: MessageRoutes},
+    {path: "/service",route: ServiceRoutes},
+    {path: "/product",route: ProductRoutes},
+    {path: "/salon",route: SalonRoutes},
+    {path: "/review",route: ReviewRoutes},
+    {path: "/admin",route: AdminRoutes},
+    {path: "/faq",route: FaqRoutes},
+    {path: "/notifications",route: Notifications},
+    {path: "/payment",route: Payment},
+    {path: "/contact",route: Contact}
 ]
 
 appRouteList.forEach((route) => router.use(route.path, route.route));

@@ -139,11 +139,17 @@ exports.bookingSummary= async(user)=>{
         { 
             $group: { 
                 _id: null, 
-                totalIncomes: { $sum: { $toDouble: "$price" } } 
+                totalIncomes: { $sum:  { $toDouble: "$price" }}
             } 
         },
+        {
+            $project: {
+                totalIncomes: 1,
+                incomeAfterDeduction: { $subtract: ["$totalIncomes", { $multiply: ["$totalIncomes", 0.08] }] }
+            }
+        }
     ]);
-    const myBalance = totalIncome[0]?.totalIncomes; 
+    const myBalance = totalIncome[0]?.totalIncomes || 0; 
 
     // total client
     const totalUser = await Booking.find({salon: user?._id}).populate("user");

@@ -216,9 +216,29 @@ exports.getOverviewFromDB = async (year) => {
     const totalUser =await User.countDocuments({role: "USER"});
     const totalSalon =await  User.countDocuments({role: "SALON"});
 
-    const totalIncome = await Booking.aggregate([
-        { $group: { _id: null, totalIncomes: { $sum: "$price" } } },
+    const totalEarnings = await Booking.aggregate([
+        { $group: { _id: null, totalEarnings: { $sum: { $toDouble: "$price" }} } },
     ]);
+
+    // my balance
+    const totalIncome = await Booking.aggregate([
+        { 
+            $group: { 
+                _id: null, 
+                totalIncomes: { $sum: { $toDouble: "$price" } }
+            } 
+        },
+        {
+            $project: {
+                totalIncomes: 1,
+                incomeAfterDeduction: { 
+                    $round: [{ $subtract: ["$totalIncomes", { $multiply: ["$totalIncomes", 0.92] }] }, 2] // Round to 2 decimal places
+                }
+            }
+        }
+    ]);
+    
+    const balance = totalIncome[0]?.incomeAfterDeduction || 0;
 
     //monthly sales calculate
     const currentYear = new Date().getFullYear();
@@ -303,7 +323,8 @@ exports.getOverviewFromDB = async (year) => {
     return {
         totalUser,
         totalSalon,
-        totalIncome: totalIncome[0]?.totalIncomes,
+        totalIncome: balance,
+        totalEarnings: totalEarnings[0]?.totalEarnings || 0,
         userMonths,
         salonMonths,
 
