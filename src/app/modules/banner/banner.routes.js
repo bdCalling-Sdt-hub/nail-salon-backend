@@ -9,7 +9,7 @@ router.post("/create-banner", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), conf
 router.patch("/update-banner/:id", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), configureFileUpload(), BannerController.updateBanner);
 router.delete("/delete-banner/:id", auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), BannerController.deleteBanner);
 router.get("/get-banners", auth(USER_ROLE.USER, USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), BannerController.getAllBanner);
-router.post("/chat", BannerController.chatToAi);
+// router.post("/chat", BannerController.chatToAi);
 
 
 module.exports = router;

@@ -13,7 +13,7 @@ exports.createBooking= catchAsync(async(req, res)=>{
     sendResponse(res, {
         statusCode : StatusCodes.OK,
         status: true,
-        message: "Booking Booked Successfully",
+        message: "Booking Confirm",
         data: booking
     })
 });

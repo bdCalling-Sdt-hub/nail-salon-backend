@@ -4,6 +4,7 @@ const Booking = require("./booking.model");
 const mongoose = require("mongoose");
 const User = require("../user/user.model");
 const Notification = require("../notifications/notification.model");
+const { bookingConfirmation } = require("../../../helper/emailHelper");
 
 exports.createBooking= async(user, payload)=>{
     const isExistUser = await User.findById(user._id);
@@ -21,6 +22,22 @@ exports.createBooking= async(user, payload)=>{
         user: payload?.salon,
         title: "A New Service has Booked",
         type: "ADMIN"
+    }
+
+    if(booking?._id){
+        const result = await Booking.findById(booking?._id).populate("user salon service");
+        const emailData = {
+            to: result?.user?.email,
+            name: result?.user?.name,
+            salon: result?.salon?.name,
+            email: result?.salon?.email,
+            contact: result?.salon?.phone,
+            date: booking?.booking_date,
+            time: booking?.booking_time,
+            services: booking?.service,
+    
+        }
+        await bookingConfirmation(emailData)
     }
 
 

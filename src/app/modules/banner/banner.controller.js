@@ -3,12 +3,6 @@ const sendResponse = require("../../../shared/sendResponse");
 const catchAsync = require("../../../shared/catchAsync");
 const {StatusCodes} = require("http-status-codes");
 // import { OpenAI } from 'openai';
-const  OpenAI = require('openai');
-
-const perplexity = new OpenAI({
-    apiKey: "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",
-    baseURL: 'https://api.perplexity.ai'
-});
 
 
 exports.createBanner = catchAsync(async (req, res) => {
@@ -80,6 +74,14 @@ exports.deleteBanner = catchAsync(async (req, res) => {
 exports.chatToAi = catchAsync(async (req, res) => {
     
     console.log(req?.body)
+
+    const  OpenAI = require('openai');
+
+    const perplexity = new OpenAI({
+        apiKey: "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",
+        baseURL: 'https://api.perplexity.ai'
+    });
+
 
     const response = await perplexity.chat.completions.create({
         model: 'mistral-7b-instruct',
