@@ -1,7 +1,6 @@
 const ApiError = require("../../../errors/ApiError");
 const bcrypt = require("bcrypt");
 const generateOTP = require("../../../util/generateOTP");
-// const sendMail = require("../../../helper/emailHelper");
 const User = require("../user/user.model");
 const { StatusCodes } = require("http-status-codes");
 const config = require("../../../config");
