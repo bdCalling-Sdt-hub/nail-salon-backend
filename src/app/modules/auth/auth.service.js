@@ -8,7 +8,7 @@ const { emailVerification, forgetPassword } = require("../../../shared/emailTemp
 const { createToken } = require("../../../helper/jwtHelper");
 const unlinkFile= require("../../../util/unlinkFile");
 const Salon = require("../salon/salon.model");
-const { sendMail } = require("../../../helper/emailHelper");
+const EmailHelper = require("../../../helper/emailHelper");
 
 exports.createUserToDB = async(payload)=>{
 
@@ -36,7 +36,7 @@ exports.createUserToDB = async(payload)=>{
     }
 
     const emailData = emailVerification({email: email, otp: newOtp, name: name})
-    sendMail(emailData);
+    EmailHelper.sendMail(emailData);
 
     const createUser= await User.create(data);
     if(!createUser){
@@ -136,7 +136,7 @@ exports.forgotPassword = async (payload) => {
   
 
     const emailData = forgetPassword({email: email, otp: newOtp, name: user?.name})
-    sendMail(emailData);
+    EmailHelper.sendMail(emailData);
     return;
 }
 

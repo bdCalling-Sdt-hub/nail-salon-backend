@@ -4,7 +4,7 @@ const Booking = require("./booking.model");
 const mongoose = require("mongoose");
 const User = require("../user/user.model");
 const Notification = require("../notifications/notification.model");
-const { bookingConfirmation } = require("../../../helper/emailHelper");
+const EmailHelper = require("../../../helper/emailHelper");
 
 exports.createBooking= async(user, payload)=>{
     const isExistUser = await User.findById(user._id);
@@ -37,7 +37,7 @@ exports.createBooking= async(user, payload)=>{
             services: booking?.service,
     
         }
-        await bookingConfirmation(emailData)
+        await EmailHelper.bookingConfirmation(emailData)
     }
 
 

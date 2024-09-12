@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendMail = async(values)=>{
+exports.sendMail = async(values)=>{
     const info = await transporter.sendMail({
         from: `"Nail Salon" ${config.email.from}`,
         to: values?.to,
@@ -23,7 +23,7 @@ const sendMail = async(values)=>{
     console.log('Mail', info.response)
 }
 
-const bookingConfirmation = async(values)=>{
+exports.bookingConfirmation = async(values)=>{
     const templatePath = path.join(__dirname, '../app/ejs/confirmBooking.ejs');
     const html = await ejs.renderFile(templatePath, {
         name: values?.name,
@@ -49,4 +49,4 @@ const bookingConfirmation = async(values)=>{
   }
 }
 
-module.exports = {bookingConfirmation, sendMail};
+// module.exports = {bookingConfirmation, sendMail};

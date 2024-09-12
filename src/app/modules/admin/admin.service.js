@@ -4,7 +4,7 @@ const Admin = require("./admin.model");
 const bcrypt = require("bcrypt");
 const { createToken } = require("../../../helper/jwtHelper");
 const config = require("../../../config");
-const {sendMail} = require("../../../helper/emailHelper");
+const EmailHelper = require("../../../helper/emailHelper");
 const User = require("../user/user.model");
 const Booking = require("../booking/booking.model");
 const generateOTP = require("../../../util/generateOTP");
@@ -97,7 +97,7 @@ exports.forgotPassword = async (payload) => {
   
 
     const emailData = forgetPassword({email: email, otp: newOtp, name: admin?.name})
-    sendMail(emailData);
+    EmailHelper.sendMail(emailData);
     return;
 }
 
