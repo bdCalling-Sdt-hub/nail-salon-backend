@@ -37,7 +37,7 @@ exports.createBooking= async(user, payload)=>{
             services: booking?.service,
     
         }
-        await EmailHelper.bookingConfirmation(emailData)
+        EmailHelper.bookingConfirmation(emailData)
     }
 
 

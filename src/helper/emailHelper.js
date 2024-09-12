@@ -48,5 +48,3 @@ exports.bookingConfirmation = async(values)=>{
     console.log("Email", error)
   }
 }
-
-// module.exports = {bookingConfirmation, sendMail};
