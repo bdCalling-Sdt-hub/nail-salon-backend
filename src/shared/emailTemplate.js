@@ -27,7 +27,7 @@ exports.forgetPassword = (values) => {
                         <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 3 minutes.</p>
                     </div>
                     <div style="font-size: 14px; color: #999; text-align: center; ">
-                        <p>&copy; 2024 Nail Salon. All rights reserved.</p>
+                        <p>&copy; 2024 Nifi. All rights reserved.</p>
                     </div>
                 </div>
             </body>
